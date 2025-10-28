@@ -15,5 +15,8 @@ use App\Http\Controllers\ApiController;
 |
 */
 
-Route::get('/user', [ApiController::class, 'getUser']);
-Route::get('/test', [ApiController::class, 'test']);
+// API v1 Routes
+Route::prefix('v1')->group(function () {
+    Route::get('/user', [ApiController::class, 'getUser']);
+    Route::get('/test', [ApiController::class, 'test']);
+});

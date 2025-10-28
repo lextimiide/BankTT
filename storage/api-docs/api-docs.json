@@ -1,8 +1,8 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Abdoulaye Diome API",
-        "description": "API documentation for Abdoulaye Diome's Laravel project",
+        "title": "Banque API",
+        "description": "API REST documentation for Banque project",
         "version": "1.0.0"
     },
     "servers": [
@@ -12,10 +12,10 @@
         }
     ],
     "paths": {
-        "/api/user": {
+        "/api/v1/user": {
             "get": {
                 "summary": "Get user information",
-                "operationId": "874e1930aa013ee90f1a3ff9cc90d19a",
+                "operationId": "162801a2d207af81686e7bcb24222b00",
                 "responses": {
                     "200": {
                         "description": "User data"
@@ -23,10 +23,10 @@
                 }
             }
         },
-        "/api/test": {
+        "/api/v1/test": {
             "get": {
                 "summary": "Test endpoint",
-                "operationId": "f4bb2bbb886ada59234f9a850289c27d",
+                "operationId": "37e788dc6d69c4fdb53c8dc566655436",
                 "responses": {
                     "200": {
                         "description": "Test response"
