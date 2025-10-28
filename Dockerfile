@@ -1,5 +1,5 @@
-# Use the official PHP image with FPM for production
-FROM php:8.3-fpm-alpine AS base
+# Use the official PHP image for production
+FROM php:8.3-cli-alpine AS base
 
 # Set working directory
 WORKDIR /var/www/html
@@ -13,9 +13,7 @@ RUN apk add --no-cache \
     libxml2-dev \
     zip \
     unzip \
-    postgresql-dev \
-    nginx \
-    supervisor
+    postgresql-dev
 
 # Clear cache
 RUN apk cache clean && rm -rf /var/cache/apk/*
@@ -43,17 +41,8 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
-# Copy nginx configuration for production
-COPY docker/nginx.conf /etc/nginx/nginx.conf
+# Expose port 8000
+EXPOSE 8000
 
-# Copy supervisor configuration for production
-COPY docker/supervisord.conf /etc/supervisord.conf
-
-# Create log directories
-RUN mkdir -p /var/log/supervisor /var/log/nginx /var/log/php-fpm
-
-# Expose port 80
-EXPOSE 80
-
-# Run supervisor for production
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+# Run Laravel development server
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]

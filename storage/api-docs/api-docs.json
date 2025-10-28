@@ -1,0 +1,38 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Abdoulaye Diome API",
+        "description": "API documentation for Abdoulaye Diome's Laravel project",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://my-default-host.com",
+            "description": "API server"
+        }
+    ],
+    "paths": {
+        "/api/user": {
+            "get": {
+                "summary": "Get user information",
+                "operationId": "874e1930aa013ee90f1a3ff9cc90d19a",
+                "responses": {
+                    "200": {
+                        "description": "User data"
+                    }
+                }
+            }
+        },
+        "/api/test": {
+            "get": {
+                "summary": "Test endpoint",
+                "operationId": "f4bb2bbb886ada59234f9a850289c27d",
+                "responses": {
+                    "200": {
+                        "description": "Test response"
+                    }
+                }
+            }
+        }
+    }
+}
