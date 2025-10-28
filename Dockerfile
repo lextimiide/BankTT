@@ -38,9 +38,6 @@ RUN composer install --no-dev --optimize-autoloader
 # Create .env file from .env.example if it doesn't exist
 RUN cp .env.example .env || true
 
-# Generate application key
-RUN php artisan key:generate
-
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \

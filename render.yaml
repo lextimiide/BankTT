@@ -4,7 +4,6 @@ services:
     runtime: docker
     plan: starter
     dockerfilePath: ./Dockerfile
-    startCommand: /usr/bin/supervisord -c /etc/supervisord.conf
     envVars:
       - key: APP_ENV
         value: production
