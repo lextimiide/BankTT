@@ -109,9 +109,6 @@
             #dark-mode svg:not(:root){
                 fill: #e7e7e7;
             }
-            #dark-mode .opblock-summary-description {
-                color: #fafafa;
-            }
         </style>
     @endif
 </head>

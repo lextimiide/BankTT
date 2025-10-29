@@ -15,19 +15,19 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['api/*', 'docs/*'],
 
-    'allowed_methods' => ['GET', 'POST', 'PATCH', 'DELETE'],
+    'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => ['http://localhost:8000', 'https://bankt-1.onrender.com'],
+    'allowed_origins' => ['http://localhost:8000', 'http://localhost:3000', 'https://bankt-1.onrender.com'],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => ['https://*.onrender.com', 'http://localhost:*'],
 
-    'allowed_headers' => ['Authorization', 'Content-Type'],
+    'allowed_headers' => ['Authorization', 'Content-Type', 'Accept', 'Origin', 'X-Requested-With'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => ['X-Total-Count', 'X-Page-Count'],
 
-    'max_age' => 0,
+    'max_age' => 86400,
 
     'supports_credentials' => false,
 
