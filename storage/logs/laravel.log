@@ -514,3 +514,31 @@
 #23 /home/lex_code/Documents/Laravel/projet_test/artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle()
 #24 {main}
 "} 
+[2025-10-29 11:24:46] local.ERROR: Too many arguments to "cache:clear" command, expected arguments "store". {"exception":"[object] (Symfony\\Component\\Console\\Exception\\RuntimeException(code: 0): Too many arguments to \"cache:clear\" command, expected arguments \"store\". at /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Input/ArgvInput.php:196)
+[stacktrace]
+#0 /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Input/ArgvInput.php(89): Symfony\\Component\\Console\\Input\\ArgvInput->parseArgument()
+#1 /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Input/ArgvInput.php(74): Symfony\\Component\\Console\\Input\\ArgvInput->parseToken()
+#2 /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Input/Input.php(56): Symfony\\Component\\Console\\Input\\ArgvInput->parse()
+#3 /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Command/Command.php(285): Symfony\\Component\\Console\\Input\\Input->bind()
+#4 /home/lex_code/Documents/Laravel/projet_test/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony\\Component\\Console\\Command\\Command->run()
+#5 /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Application.php(1088): Illuminate\\Console\\Command->run()
+#6 /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand()
+#7 /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Application.php(175): Symfony\\Component\\Console\\Application->doRun()
+#8 /home/lex_code/Documents/Laravel/projet_test/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony\\Component\\Console\\Application->run()
+#9 /home/lex_code/Documents/Laravel/projet_test/artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle()
+#10 {main}
+"} 
+[2025-10-29 11:26:37] local.ERROR: No arguments expected for "view:clear" command, got "php". {"exception":"[object] (Symfony\\Component\\Console\\Exception\\RuntimeException(code: 0): No arguments expected for \"view:clear\" command, got \"php\". at /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Input/ArgvInput.php:196)
+[stacktrace]
+#0 /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Input/ArgvInput.php(89): Symfony\\Component\\Console\\Input\\ArgvInput->parseArgument()
+#1 /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Input/ArgvInput.php(74): Symfony\\Component\\Console\\Input\\ArgvInput->parseToken()
+#2 /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Input/Input.php(56): Symfony\\Component\\Console\\Input\\ArgvInput->parse()
+#3 /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Command/Command.php(285): Symfony\\Component\\Console\\Input\\Input->bind()
+#4 /home/lex_code/Documents/Laravel/projet_test/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony\\Component\\Console\\Command\\Command->run()
+#5 /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Application.php(1088): Illuminate\\Console\\Command->run()
+#6 /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand()
+#7 /home/lex_code/Documents/Laravel/projet_test/vendor/symfony/console/Application.php(175): Symfony\\Component\\Console\\Application->doRun()
+#8 /home/lex_code/Documents/Laravel/projet_test/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony\\Component\\Console\\Application->run()
+#9 /home/lex_code/Documents/Laravel/projet_test/artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle()
+#10 {main}
+"} 
