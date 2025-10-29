@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "http://my-default-host.com",
+            "url": "http://localhost:8000",
             "description": "API server"
         }
     ],
@@ -26,10 +26,43 @@
         "/api/v1/test": {
             "get": {
                 "summary": "Test endpoint",
+                "description": "Simple test endpoint that returns JSON response",
                 "operationId": "37e788dc6d69c4fdb53c8dc566655436",
                 "responses": {
                     "200": {
-                        "description": "Test response"
+                        "description": "Successful test response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Test endpoint working"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "traceId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }

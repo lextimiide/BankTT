@@ -39,7 +39,20 @@ class ApiController extends Controller
      * @OA\Get(
      *     path="/api/v1/test",
      *     summary="Test endpoint",
-     *     @OA\Response(response=200, description="Test response")
+     *     description="Simple test endpoint that returns JSON response",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful test response",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="message", type="string", example="Test endpoint working")
+     *             ),
+     *             @OA\Property(property="timestamp", type="string", format="date-time"),
+     *             @OA\Property(property="path", type="string"),
+     *             @OA\Property(property="traceId", type="string")
+     *         )
+     *     )
      * )
      */
     public function test(Request $request)
