@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['GET', 'POST', 'PATCH', 'DELETE'],
 
-    'allowed_origins' => ['http://front.banque.example.com', 'https://bankt-1.onrender.com'],
+    'allowed_origins' => ['http://localhost:8000', 'https://bankt-1.onrender.com'],
 
     'allowed_origins_patterns' => [],
 

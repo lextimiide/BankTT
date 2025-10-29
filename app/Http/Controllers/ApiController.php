@@ -11,8 +11,12 @@ use Illuminate\Http\Request;
  *     description="API REST documentation for Banque project"
  * )
  * @OA\Server(
- *     url=L5_SWAGGER_CONST_HOST,
- *     description="API server"
+ *     url="http://localhost:8000",
+ *     description="Development server"
+ * )
+ * @OA\Server(
+ *     url="https://bankt-1.onrender.com",
+ *     description="Production server"
  * )
  */
 class ApiController extends Controller
