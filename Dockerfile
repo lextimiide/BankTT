@@ -53,14 +53,14 @@
 # -------------------------------------------------------
 # Stage 1 : Base PHP image
 # -------------------------------------------------------
-FROM php:8.3-cli-alpine AS base
+# ----------------------------------------
+# Stage 1: Build
+# ----------------------------------------
+FROM php:8.3-cli-alpine AS build
 
-# Set working directory
 WORKDIR /var/www/html
 
-# -------------------------------------------------------
-# Install system dependencies
-# -------------------------------------------------------
+# Installer les dépendances système
 RUN apk add --no-cache \
     git \
     curl \
@@ -75,36 +75,67 @@ RUN apk add --no-cache \
     postgresql-dev \
     bash \
     nodejs \
-    npm
+    npm \
+    yarn
 
-# Clear cache
-RUN apk cache clean && rm -rf /var/cache/apk/*
-
-# -------------------------------------------------------
-# Configure and install PHP extensions
-# -------------------------------------------------------
+# Installer les extensions PHP
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install \
-        pdo \
-        pdo_pgsql \
-        mbstring \
-        exif \
-        pcntl \
-        bcmath \
-        gd
+    && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 
-# -------------------------------------------------------
-# Install Composer
-# -------------------------------------------------------
+# Installer Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# -------------------------------------------------------
-# Copy application files
-# -------------------------------------------------------
+# Copier le code
 COPY . /var/www/html
-COPY --chown=www-data:www-data . /var/www/html
 
-# -------------------------------------------------------
-# Install PHP dependencies
-# -------------------------------------------------------
-# Note: on installe aussi les d
+# Installer toutes les dépendances Composer (dev + prod)
+RUN composer install --optimize-autoloader
+
+# Installer les dépendances front (npm/yarn)
+RUN npm install \
+    && npm run build
+
+# ----------------------------------------
+# Stage 2: Production
+# ----------------------------------------
+FROM php:8.3-cli-alpine AS production
+
+WORKDIR /var/www/html
+
+# Installer seulement les dépendances système nécessaires
+RUN apk add --no-cache \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev \
+    freetype-dev \
+    oniguruma-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    postgresql-dev \
+    bash
+
+# Installer les extensions PHP
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
+
+# Copier Composer depuis build (pour autoload)
+COPY --from=build /usr/bin/composer /usr/bin/composer
+
+# Copier le code + vendor + assets compilés
+COPY --from=build /var/www/html /var/www/html
+
+# Créer .env si nécessaire
+RUN cp .env.example .env || true
+
+# Définir permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage \
+    && chmod -R 755 /var/www/html/bootstrap/cache
+
+# Exposer le port
+EXPOSE 8000
+
+# Lancer le serveur Laravel
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+
