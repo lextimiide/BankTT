@@ -9,6 +9,9 @@ RUN apk add --no-cache \
     git \
     curl \
     libpng-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev \
+    freetype-dev \
     oniguruma-dev \
     libxml2-dev \
     zip \
@@ -18,8 +21,9 @@ RUN apk add --no-cache \
 # Clear cache
 RUN apk cache clean && rm -rf /var/cache/apk/*
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
+# Configure and install GD extension with all dependencies
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
