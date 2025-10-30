@@ -40,5 +40,14 @@ Route::prefix('v1')->middleware(['api'])->group(function () {
         Route::post('/', [CompteController::class, 'store'])
             ->name('comptes.store')
             ->middleware('App\Http\Middleware\LoggingMiddleware');
+
+        // Routes pour le blocage/déblocage des comptes épargne
+        Route::post('/{id}/bloquer', [CompteController::class, 'block'])
+            ->name('comptes.block')
+            ->middleware('App\Http\Middleware\LoggingMiddleware');
+
+        Route::post('/{id}/debloquer', [CompteController::class, 'unblock'])
+            ->name('comptes.unblock')
+            ->middleware('App\Http\Middleware\LoggingMiddleware');
     });
 });

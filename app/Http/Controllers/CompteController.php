@@ -34,6 +34,11 @@ class CompteController extends Controller
      *         url="https://bankt-1.onrender.com/api/v1",
      *         description="Serveur de production Render"
      *     ),
+     *     @OA\Server(
+     *          url="http://localhost:8000/api/v1",
+     *         description="Serveur local de développement"
+     *         
+     *     ),
      *     @OA\Parameter(
      *         name="page",
      *         in="query",
@@ -149,8 +154,13 @@ class CompteController extends Controller
      *     operationId="createCompte",
      *     tags={"Comptes"},
      *     @OA\Server(
-     *         url="https://bankt-1.onrender.com/api/v1",
+     *          url="https://bankt-1.onrender.com/api/v1",
      *         description="Serveur de production Render"
+     *        
+     *     ),
+     *     @OA\Server(
+     *          url="http://localhost:8000/api/v1",
+     *         description="Serveur local de développement"
      *     ),
      *     @OA\RequestBody(
      *         required=true,
@@ -249,11 +259,19 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/comptes/{compteId}",
+     *     path="/comptes/{compteId}",
      *     summary="Récupérer un compte spécifique",
      *     description="Permet de récupérer les détails d'un compte spécifique par son ID. La stratégie de recherche vérifie d'abord la base locale pour les comptes chèque ou épargne actifs, puis la base serverless si nécessaire.",
      *     operationId="getCompteById",
      *     tags={"Comptes"},
+     *     @OA\Server(
+     *         url="https://bankt-1.onrender.com/api/v1",
+     *         description="Serveur de production Render"
+     *     ),
+     *     @OA\Server(
+     *         url="http://localhost:8000/api/v1",
+     *         description="Serveur local de développement"
+     *     ),
      *     @OA\Parameter(
      *         name="compteId",
      *         in="path",
@@ -351,6 +369,10 @@ class CompteController extends Controller
      *         url="https://bankt-1.onrender.com/api/v1",
      *         description="Serveur de production Render"
      *     ),
+     *     @OA\Server(
+     *         url="http://localhost:8000/api/v1",
+     *         description="Serveur local de développement"
+     *     ),
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -427,6 +449,184 @@ class CompteController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/comptes/{id}/bloquer",
+     *     summary="Bloquer un compte épargne",
+     *     description="Bloque un compte épargne actif pour une durée déterminée avec un motif spécifique. Seuls les comptes épargne actifs peuvent être bloqués.",
+     *     operationId="blockCompte",
+     *     tags={"Comptes"},
+     *     @OA\Server(
+     *         url="https://bankt-1.onrender.com/api/v1",
+     *         description="Serveur de production Render"
+     *     ),
+     *     @OA\Server(
+     *         url="http://localhost:8000/api/v1",
+     *         description="Serveur local de développement"
+     *     ),
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="UUID du compte épargne à bloquer",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"motif","duree","unite"},
+     *             @OA\Property(property="motif", type="string", example="Activité suspecte détectée", description="Motif du blocage"),
+     *             @OA\Property(property="duree", type="integer", example=30, description="Durée du blocage"),
+     *             @OA\Property(property="unite", type="string", enum={"jours", "mois", "annees"}, example="jours", description="Unité de temps pour la durée"),
+     *             @OA\Property(property="dateDebutBlocage", type="string", format="date-time", example="2025-10-30T14:30:00Z", description="Date de début du blocage (optionnel, défaut: maintenant)")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte bloqué avec succès",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Compte bloqué avec succès"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="string", format="uuid"),
+     *                 @OA\Property(property="numeroCompte", type="string", example="CB241234567890"),
+     *                 @OA\Property(property="statut", type="string", example="bloque"),
+     *                 @OA\Property(property="motifBlocage", type="string", example="Activité suspecte détectée"),
+     *                 @OA\Property(property="dateDebutBlocage", type="string", format="date-time"),
+     *                 @OA\Property(property="dateFinBlocage", type="string", format="date-time"),
+     *                 @OA\Property(property="client", ref="#/components/schemas/Client")
+     *             ),
+     *             @OA\Property(property="timestamp", type="string", format="date-time"),
+     *             @OA\Property(property="path", type="string"),
+     *             @OA\Property(property="traceId", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Requête invalide ou compte ne peut pas être bloqué",
+     *         @OA\JsonContent(ref="#/components/schemas/Error")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(ref="#/components/schemas/Error")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne du serveur",
+     *         @OA\JsonContent(ref="#/components/schemas/Error")
+     *     )
+     * )
+     */
+    public function block(\App\Http\Requests\BlockCompteRequest $request, string $id)
+    {
+        try {
+            $compte = $this->compteService->blockCompte($id, $request->validated());
+            return $this->successResponse(
+                new CompteResource($compte),
+                'Compte bloqué avec succès'
+            );
+        } catch (ApiException $e) {
+            return $this->errorResponse($e->getMessage(), $e->getCode() ?: 500);
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors du blocage du compte', [
+                'compte_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            return $this->errorResponse('Erreur interne du serveur', 500);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/comptes/{id}/debloquer",
+     *     summary="Débloquer un compte épargne",
+     *     description="Débloque un compte épargne bloqué avec un motif spécifique. Seuls les comptes bloqués peuvent être débloqués.",
+     *     operationId="unblockCompte",
+     *     tags={"Comptes"},
+     *     @OA\Server(
+     *         url="https://bankt-1.onrender.com/api/v1",
+     *         description="Serveur de production Render"
+     *     ),
+     *     @OA\Server(
+     *         url="http://localhost:8000/api/v1",
+     *         description="Serveur local de développement"
+     *     ),
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="UUID du compte épargne à débloquer",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"motif"},
+     *             @OA\Property(property="motif", type="string", example="Vérification complétée", description="Motif du déblocage")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte débloqué avec succès",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Compte débloqué avec succès"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="string", format="uuid"),
+     *                 @OA\Property(property="numeroCompte", type="string", example="CB241234567890"),
+     *                 @OA\Property(property="statut", type="string", example="actif"),
+     *                 @OA\Property(property="dateDeblocage", type="string", format="date-time"),
+     *                 @OA\Property(property="motifDeblocage", type="string", example="Vérification complétée"),
+     *                 @OA\Property(property="client", ref="#/components/schemas/Client")
+     *             ),
+     *             @OA\Property(property="timestamp", type="string", format="date-time"),
+     *             @OA\Property(property="path", type="string"),
+     *             @OA\Property(property="traceId", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Requête invalide ou compte ne peut pas être débloqué",
+     *         @OA\JsonContent(ref="#/components/schemas/Error")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(ref="#/components/schemas/Error")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne du serveur",
+     *         @OA\JsonContent(ref="#/components/schemas/Error")
+     *     )
+     * )
+     */
+    public function unblock(\App\Http\Requests\UnblockCompteRequest $request, string $id)
+    {
+        try {
+            $compte = $this->compteService->unblockCompte($id, $request->validated());
+            return $this->successResponse(
+                new CompteResource($compte),
+                'Compte débloqué avec succès'
+            );
+        } catch (ApiException $e) {
+            return $this->errorResponse($e->getMessage(), $e->getCode() ?: 500);
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors du déblocage du compte', [
+                'compte_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            return $this->errorResponse('Erreur interne du serveur', 500);
+        }
+    }
+
+    /**
      * @OA\Delete(
      *     path="/comptes/{id}",
      *     summary="Supprimer un compte bancaire (soft delete)",
@@ -436,6 +636,10 @@ class CompteController extends Controller
      *     @OA\Server(
      *         url="https://bankt-1.onrender.com/api/v1",
      *         description="Serveur de production Render"
+     *     ),
+     *     @OA\Server(
+     *         url="http://localhost:8000/api/v1",
+     *         description="Serveur local de développement"
      *     ),
      *     @OA\Parameter(
      *         name="id",

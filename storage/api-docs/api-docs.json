@@ -11,6 +11,10 @@
     },
     "servers": [
         {
+            "url": "http://localhost:8000/api/v1",
+            "description": "Serveur local de développement"
+        },
+        {
             "url": "https://bankt-1.onrender.com/api/v1",
             "description": "Serveur de production Render"
         },
@@ -441,6 +445,10 @@
                     {
                         "url": "https://bankt-1.onrender.com/api/v1",
                         "description": "Serveur de production Render"
+                    },
+                    {
+                        "url": "http://localhost:8000/api/v1",
+                        "description": "Serveur local de développement"
                     }
                 ]
             },
@@ -661,11 +669,15 @@
                     {
                         "url": "https://bankt-1.onrender.com/api/v1",
                         "description": "Serveur de production Render"
+                    },
+                    {
+                        "url": "http://localhost:8000/api/v1",
+                        "description": "Serveur local de développement"
                     }
                 ]
             }
         },
-        "/api/v1/comptes/{compteId}": {
+        "/comptes/{compteId}": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -849,7 +861,17 @@
                             }
                         }
                     }
-                }
+                },
+                "servers": [
+                    {
+                        "url": "https://bankt-1.onrender.com/api/v1",
+                        "description": "Serveur de production Render"
+                    },
+                    {
+                        "url": "http://localhost:8000/api/v1",
+                        "description": "Serveur local de développement"
+                    }
+                ]
             }
         },
         "/comptes/{id}": {
@@ -994,6 +1016,10 @@
                     {
                         "url": "https://bankt-1.onrender.com/api/v1",
                         "description": "Serveur de production Render"
+                    },
+                    {
+                        "url": "http://localhost:8000/api/v1",
+                        "description": "Serveur local de développement"
                     }
                 ]
             },
@@ -1085,6 +1111,321 @@
                     {
                         "url": "https://bankt-1.onrender.com/api/v1",
                         "description": "Serveur de production Render"
+                    },
+                    {
+                        "url": "http://localhost:8000/api/v1",
+                        "description": "Serveur local de développement"
+                    }
+                ]
+            }
+        },
+        "/comptes/{id}/bloquer": {
+            "post": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Bloquer un compte épargne",
+                "description": "Bloque un compte épargne actif pour une durée déterminée avec un motif spécifique. Seuls les comptes épargne actifs peuvent être bloqués.",
+                "operationId": "blockCompte",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID du compte épargne à bloquer",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "motif",
+                                    "duree",
+                                    "unite"
+                                ],
+                                "properties": {
+                                    "motif": {
+                                        "description": "Motif du blocage",
+                                        "type": "string",
+                                        "example": "Activité suspecte détectée"
+                                    },
+                                    "duree": {
+                                        "description": "Durée du blocage",
+                                        "type": "integer",
+                                        "example": 30
+                                    },
+                                    "unite": {
+                                        "description": "Unité de temps pour la durée",
+                                        "type": "string",
+                                        "enum": [
+                                            "jours",
+                                            "mois",
+                                            "annees"
+                                        ],
+                                        "example": "jours"
+                                    },
+                                    "dateDebutBlocage": {
+                                        "description": "Date de début du blocage (optionnel, défaut: maintenant)",
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-10-30T14:30:00Z"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Compte bloqué avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte bloqué avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "format": "uuid"
+                                                },
+                                                "numeroCompte": {
+                                                    "type": "string",
+                                                    "example": "CB241234567890"
+                                                },
+                                                "statut": {
+                                                    "type": "string",
+                                                    "example": "bloque"
+                                                },
+                                                "motifBlocage": {
+                                                    "type": "string",
+                                                    "example": "Activité suspecte détectée"
+                                                },
+                                                "dateDebutBlocage": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "dateFinBlocage": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "client": {
+                                                    "$ref": "#/components/schemas/Client"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "traceId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Requête invalide ou compte ne peut pas être bloqué",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                },
+                "servers": [
+                    {
+                        "url": "https://bankt-1.onrender.com/api/v1",
+                        "description": "Serveur de production Render"
+                    },
+                    {
+                        "url": "http://localhost:8000/api/v1",
+                        "description": "Serveur local de développement"
+                    }
+                ]
+            }
+        },
+        "/comptes/{id}/debloquer": {
+            "post": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Débloquer un compte épargne",
+                "description": "Débloque un compte épargne bloqué avec un motif spécifique. Seuls les comptes bloqués peuvent être débloqués.",
+                "operationId": "unblockCompte",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID du compte épargne à débloquer",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "motif"
+                                ],
+                                "properties": {
+                                    "motif": {
+                                        "description": "Motif du déblocage",
+                                        "type": "string",
+                                        "example": "Vérification complétée"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Compte débloqué avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte débloqué avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "format": "uuid"
+                                                },
+                                                "numeroCompte": {
+                                                    "type": "string",
+                                                    "example": "CB241234567890"
+                                                },
+                                                "statut": {
+                                                    "type": "string",
+                                                    "example": "actif"
+                                                },
+                                                "dateDeblocage": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "motifDeblocage": {
+                                                    "type": "string",
+                                                    "example": "Vérification complétée"
+                                                },
+                                                "client": {
+                                                    "$ref": "#/components/schemas/Client"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "traceId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Requête invalide ou compte ne peut pas être débloqué",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                },
+                "servers": [
+                    {
+                        "url": "https://bankt-1.onrender.com/api/v1",
+                        "description": "Serveur de production Render"
+                    },
+                    {
+                        "url": "http://localhost:8000/api/v1",
+                        "description": "Serveur local de développement"
                     }
                 ]
             }
