@@ -17,13 +17,13 @@ class ClientFactory extends Factory
     public function definition(): array
     {
         return [
-            'titulaire' => $this->faker->name(),
-            'nci' => $this->faker->optional(0.7)->numerify('##########'), // Numéro de 10 chiffres optionnel
-            'email' => $this->faker->unique()->safeEmail(),
-            'telephone' => $this->faker->phoneNumber(),
-            'adresse' => $this->faker->address(),
-            'statut' => $this->faker->randomElement(['actif', 'inactif', 'suspendu']),
-            'email_verified_at' => $this->faker->optional(0.8)->dateTimeBetween('-1 year', 'now'),
+            'titulaire' => fake()->name(),
+            'nci' => fake()->optional(0.7)->numerify('#############'), // Numéro de 13 chiffres optionnel
+            'email' => fake()->unique()->safeEmail(),
+            'telephone' => fake()->numerify('7########'), // Format sénégalais
+            'adresse' => fake()->address(),
+            'statut' => fake()->randomElement(['actif', 'inactif', 'suspendu']),
+            'email_verified_at' => fake()->optional(0.8)->dateTimeBetween('-1 year', 'now'),
         ];
     }
 

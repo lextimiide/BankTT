@@ -12,11 +12,11 @@ class ClientSeeder extends Seeder
      */
     public function run(): void
     {
-        // Créer seulement 10 clients aléatoires (pas trop)
-        \App\Models\Client::factory(10)->create();
+        // Créer seulement 8 clients aléatoires (pas trop)
+        \App\Models\Client::factory(8)->create();
 
         // Créer quelques clients spécifiques pour les tests avec numéros sénégalais valides
-        \App\Models\Client::factory()->create([
+        \App\Models\Client::create([
             'titulaire' => 'Hawa BB Wane',
             'nci' => '1234567890123',
             'email' => 'hawa.wane@example.com',
@@ -25,7 +25,7 @@ class ClientSeeder extends Seeder
             'statut' => 'actif',
         ]);
 
-        \App\Models\Client::factory()->create([
+        \App\Models\Client::create([
             'titulaire' => 'Mamadou Diallo',
             'nci' => '9876543210987',
             'email' => 'mamadou.diallo@example.com',
@@ -34,7 +34,7 @@ class ClientSeeder extends Seeder
             'statut' => 'actif',
         ]);
 
-        \App\Models\Client::factory()->create([
+        \App\Models\Client::create([
             'titulaire' => 'Fatou Sow',
             'nci' => '4567891234567',
             'email' => 'fatou.sow@example.com',
@@ -43,7 +43,7 @@ class ClientSeeder extends Seeder
             'statut' => 'actif',
         ]);
 
-        \App\Models\Client::factory()->create([
+        \App\Models\Client::create([
             'titulaire' => 'Cheikh Ndiaye',
             'nci' => '7891234567890',
             'email' => 'cheikh.ndiaye@example.com',
