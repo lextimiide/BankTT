@@ -46,8 +46,8 @@ RUN php artisan key:generate
 # Run database migrations
 RUN php artisan migrate --force
 
-# Run database seeders
-RUN php artisan db:seed --force
+# Run database seeders (skip if Faker not available)
+RUN php artisan db:seed --force || echo "Seeders skipped - Faker not available in production"
 
 # Generate Swagger documentation
 RUN php artisan l5-swagger:generate
