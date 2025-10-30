@@ -25,26 +25,24 @@ class StoreCompteRequest extends FormRequest
     {
         return [
             // Account fields
+            'numero_compte' => 'nullable|string|unique:comptes,numero_compte',
             'type' => 'required|in:cheque,epargne,courant',
             'soldeInitial' => 'required|numeric|min:10000',
             'devise' => 'required|in:FCFA,EUR,USD',
 
-            // Client fields (required for new clients, optional for existing)
-            'client.titulaire' => 'required_without:client.id|string|min:2|max:255',
-            'client.email' => 'required_without:client.id|email|unique:clients,email',
+            // Client fields (always required - no existing client support)
+            'client.titulaire' => 'required|string|min:2|max:255',
+            'client.email' => 'required|email|unique:clients,email',
             'client.telephone' => [
-                'required_without:client.id',
+                'required',
                 new SenegalesePhone(),
                 'unique:clients,telephone'
             ],
-            'client.adresse' => 'required_without:client.id|string|min:5|max:500',
+            'client.adresse' => 'required|string|min:5|max:500',
             'client.nci' => [
-                'nullable',
+                'required',
                 new SenegaleseNCI()
-            ],
-
-            // For existing clients
-            'client.id' => 'nullable|uuid|exists:clients,id'
+            ]
         ];
     }
 
@@ -54,26 +52,26 @@ class StoreCompteRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'numero_compte.unique' => 'Ce numéro de compte est déjà utilisé.',
             'type.required' => 'Le type de compte est obligatoire.',
             'type.in' => 'Le type de compte doit être : cheque, epargne ou courant.',
-            'solde_initial.required' => 'Le solde initial est obligatoire.',
-            'solde_initial.numeric' => 'Le solde initial doit être un nombre.',
-            'solde_initial.min' => 'Le solde initial doit être d\'au moins 10 000 FCFA.',
+            'soldeInitial.required' => 'Le solde initial est obligatoire.',
+            'soldeInitial.numeric' => 'Le solde initial doit être un nombre.',
+            'soldeInitial.min' => 'Le solde initial doit être d\'au moins 10 000 FCFA.',
             'devise.required' => 'La devise est obligatoire.',
             'devise.in' => 'La devise doit être : FCFA, EUR ou USD.',
-            'client.titulaire.required_without' => 'Le nom du titulaire est obligatoire pour un nouveau client.',
+            'client.titulaire.required' => 'Le nom du titulaire est obligatoire.',
             'client.titulaire.min' => 'Le nom du titulaire doit contenir au moins 2 caractères.',
             'client.titulaire.max' => 'Le nom du titulaire ne peut pas dépasser 255 caractères.',
-            'client.email.required_without' => 'L\'email est obligatoire pour un nouveau client.',
+            'client.email.required' => 'L\'email est obligatoire.',
             'client.email.email' => 'L\'email doit être une adresse email valide.',
             'client.email.unique' => 'Cet email est déjà utilisé.',
-            'client.telephone.required_without' => 'Le numéro de téléphone est obligatoire pour un nouveau client.',
+            'client.telephone.required' => 'Le numéro de téléphone est obligatoire.',
             'client.telephone.unique' => 'Ce numéro de téléphone est déjà utilisé.',
-            'client.adresse.required_without' => 'L\'adresse est obligatoire pour un nouveau client.',
+            'client.adresse.required' => 'L\'adresse est obligatoire.',
             'client.adresse.min' => 'L\'adresse doit contenir au moins 5 caractères.',
             'client.adresse.max' => 'L\'adresse ne peut pas dépasser 500 caractères.',
-            'client.id.uuid' => 'L\'ID du client doit être un UUID valide.',
-            'client.id.exists' => 'Le client spécifié n\'existe pas.'
+            'client.nci.required' => 'Le numéro de carte d\'identité nationale est obligatoire.'
         ];
     }
 
@@ -83,15 +81,15 @@ class StoreCompteRequest extends FormRequest
     public function attributes(): array
     {
         return [
+            'numero_compte' => 'numéro de compte',
             'type' => 'type de compte',
-            'solde_initial' => 'solde initial',
+            'soldeInitial' => 'solde initial',
             'devise' => 'devise',
             'client.titulaire' => 'nom du titulaire',
             'client.email' => 'email',
             'client.telephone' => 'numéro de téléphone',
             'client.adresse' => 'adresse',
-            'client.nci' => 'numéro de carte d\'identité',
-            'client.id' => 'ID du client'
+            'client.nci' => 'numéro de carte d\'identité'
         ];
     }
 }

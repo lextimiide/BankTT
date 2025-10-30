@@ -166,24 +166,17 @@ class CompteController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"type","soldeInitial","devise","client"},
+     *             @OA\Property(property="numero_compte", type="string", example="TEST002", description="Numéro de compte optionnel (auto-généré si vide)"),
      *             @OA\Property(property="type", type="string", enum={"cheque", "epargne", "courant"}, example="cheque"),
-     *             @OA\Property(property="soldeInitial", type="number", format="decimal", minimum=10000, example=500000),
+     *             @OA\Property(property="soldeInitial", type="number", format="decimal", minimum=10000, example=15000),
      *             @OA\Property(property="devise", type="string", enum={"FCFA", "EUR", "USD"}, example="FCFA"),
      *             @OA\Property(property="client", type="object",
-     *                 oneOf={
-     *                     @OA\Schema(
-     *                         required={"id"},
-     *                         @OA\Property(property="id", type="string", format="uuid", description="ID du client existant", example="550e8400-e29b-41d4-a716-446655440000")
-     *                     ),
-     *                     @OA\Schema(
-     *                         required={"titulaire","email","telephone","adresse"},
-     *                         @OA\Property(property="titulaire", type="string", example="Hawa BB Wane"),
-     *                         @OA\Property(property="email", type="string", format="email", example="cheikh.sy@example.com"),
-     *                         @OA\Property(property="telephone", type="string", example="+221771234567"),
-     *                         @OA\Property(property="adresse", type="string", example="Dakar, Sénégal"),
-     *                         @OA\Property(property="nci", type="string", example="1234567890123", description="Numéro de carte d'identité nationale")
-     *                     )
-     *                 }
+     *                 required={"titulaire","email","telephone","adresse","nci"},
+     *                 @OA\Property(property="titulaire", type="string", example="Test User 2"),
+     *                 @OA\Property(property="email", type="string", format="email", example="test2@example.com"),
+     *                 @OA\Property(property="telephone", type="string", example="771234569"),
+     *                 @OA\Property(property="adresse", type="string", example="Test Address 2"),
+     *                 @OA\Property(property="nci", type="string", example="1234567890124", description="Numéro de carte d'identité nationale")
      *             )
      *         )
      *     ),
