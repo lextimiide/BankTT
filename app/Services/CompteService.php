@@ -446,6 +446,167 @@ class CompteService
         });
     }
     /**
+     * Bloque un compte épargne avec une durée déterminée
+     * Seuls les comptes épargne actifs peuvent être bloqués
+     *
+     * @throws ApiException
+     */
+    public function blockCompte(string $compteId, array $data): Compte
+    {
+        return DB::transaction(function () use ($compteId, $data) {
+            try {
+                // Récupérer le compte avec le client
+                $compte = Compte::with('client')->find($compteId);
+                if (!$compte) {
+                    throw new ApiException('Compte non trouvé', 404);
+                }
+
+                // Vérifier que c'est un compte épargne
+                if ($compte->type !== 'epargne') {
+                    throw new ApiException(
+                        'Seuls les comptes épargne peuvent être bloqués. Type actuel: ' . $compte->type,
+                        400
+                    );
+                }
+
+                // Vérifier que le compte est actif
+                if ($compte->statut !== 'actif') {
+                    throw new ApiException(
+                        'Seuls les comptes actifs peuvent être bloqués. Statut actuel: ' . $compte->statut,
+                        400
+                    );
+                }
+
+                // Calculer les dates de blocage
+                $dateDebutBlocage = isset($data['dateDebutBlocage'])
+                    ? \Carbon\Carbon::parse($data['dateDebutBlocage'])
+                    : now();
+                $dateFinBlocage = $this->calculateDateFinBlocage($dateDebutBlocage, $data['duree'], $data['unite']);
+
+                // Sauvegarder les données avant modification pour le logging
+                $originalData = [
+                    'compte' => $compte->toArray(),
+                    'client' => $compte->client->toArray()
+                ];
+
+                // Mettre à jour le compte
+                $compte->update([
+                    'statut' => 'bloque',
+                    'motif_blocage' => $data['motif'],
+                    'date_debut_blocage' => $dateDebutBlocage,
+                    'date_fin_blocage' => $dateFinBlocage,
+                ]);
+
+                // Log de l'opération de blocage
+                \Log::info('Compte bloqué avec succès', [
+                    'compte_id' => $compte->id,
+                    'numero_compte' => $compte->numero_compte,
+                    'client_id' => $compte->client->id,
+                    'motif_blocage' => $data['motif'],
+                    'date_debut_blocage' => $dateDebutBlocage,
+                    'date_fin_blocage' => $dateFinBlocage,
+                    'duree' => $data['duree'],
+                    'unite' => $data['unite'],
+                    'ancienne_valeur' => $originalData
+                ]);
+
+                return $compte->load('client');
+
+            } catch (\Exception $e) {
+                \Log::error('Erreur lors du blocage du compte', [
+                    'compte_id' => $compteId,
+                    'data' => $data,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+
+                throw new ApiException(
+                    'Erreur lors du blocage du compte: ' . $e->getMessage(),
+                    500
+                );
+            }
+        });
+    }
+
+    /**
+     * Débloque un compte épargne bloqué
+     * Seuls les comptes bloqués peuvent être débloqués
+     *
+     * @throws ApiException
+     */
+    public function unblockCompte(string $compteId, array $data): Compte
+    {
+        return DB::transaction(function () use ($compteId, $data) {
+            try {
+                // Récupérer le compte avec le client
+                $compte = Compte::with('client')->find($compteId);
+                if (!$compte) {
+                    throw new ApiException('Compte non trouvé', 404);
+                }
+
+                // Vérifier que le compte est bloqué
+                if ($compte->statut !== 'bloque') {
+                    throw new ApiException(
+                        'Seuls les comptes bloqués peuvent être débloqués. Statut actuel: ' . $compte->statut,
+                        400
+                    );
+                }
+
+                // Sauvegarder les données avant modification pour le logging
+                $originalData = [
+                    'compte' => $compte->toArray(),
+                    'client' => $compte->client->toArray()
+                ];
+
+                // Mettre à jour le compte
+                $compte->update([
+                    'statut' => 'actif',
+                    'motif_deblocage' => $data['motif'],
+                    'date_deblocage' => now(),
+                ]);
+
+                // Log de l'opération de déblocage
+                \Log::info('Compte débloqué avec succès', [
+                    'compte_id' => $compte->id,
+                    'numero_compte' => $compte->numero_compte,
+                    'client_id' => $compte->client->id,
+                    'motif_deblocage' => $data['motif'],
+                    'date_deblocage' => $compte->date_deblocage,
+                    'ancienne_valeur' => $originalData
+                ]);
+
+                return $compte->load('client');
+
+            } catch (\Exception $e) {
+                \Log::error('Erreur lors du déblocage du compte', [
+                    'compte_id' => $compteId,
+                    'data' => $data,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+
+                throw new ApiException(
+                    'Erreur lors du déblocage du compte: ' . $e->getMessage(),
+                    500
+                );
+            }
+        });
+    }
+
+    /**
+     * Calcule la date de fin de blocage en fonction de la durée et de l'unité
+     */
+    private function calculateDateFinBlocage(\Carbon\Carbon $dateDebut, int $duree, string $unite): \Carbon\Carbon
+    {
+        return match ($unite) {
+            'jours' => $dateDebut->copy()->addDays($duree),
+            'mois' => $dateDebut->copy()->addMonths($duree),
+            'annees' => $dateDebut->copy()->addYears($duree),
+            default => throw new \InvalidArgumentException("Unité de temps invalide: {$unite}")
+        };
+    }
+
+    /**
      * Supprime un compte bancaire (soft delete)
      * Seuls les comptes actifs peuvent être supprimés
      *
