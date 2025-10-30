@@ -9968,17 +9968,17 @@
         },
         {
             "name": "webmozart/assert",
-            "version": "1.12.0",
-            "version_normalized": "1.12.0.0",
+            "version": "1.12.1",
+            "version_normalized": "1.12.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webmozarts/assert.git",
-                "reference": "541057574806f942c94662b817a50f63f7345360"
+                "reference": "9be6926d8b485f55b9229203f962b51ed377ba68"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozarts/assert/zipball/541057574806f942c94662b817a50f63f7345360",
-                "reference": "541057574806f942c94662b817a50f63f7345360",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/9be6926d8b485f55b9229203f962b51ed377ba68",
+                "reference": "9be6926d8b485f55b9229203f962b51ed377ba68",
                 "shasum": ""
             },
             "require": {
@@ -9992,7 +9992,7 @@
                 "ext-simplexml": "",
                 "ext-spl": ""
             },
-            "time": "2025-10-20T12:43:39+00:00",
+            "time": "2025-10-29T15:56:20+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -10023,7 +10023,7 @@
             ],
             "support": {
                 "issues": "https://github.com/webmozarts/assert/issues",
-                "source": "https://github.com/webmozarts/assert/tree/1.12.0"
+                "source": "https://github.com/webmozarts/assert/tree/1.12.1"
             },
             "install-path": "../webmozart/assert"
         },
@@ -10115,8 +10115,6 @@
     "dev": true,
     "dev-package-names": [
         "barryvdh/laravel-debugbar",
-        "darkaonline/l5-swagger",
-        "doctrine/annotations",
         "fakerphp/faker",
         "filp/whoops",
         "hamcrest/hamcrest-php",
@@ -10134,7 +10132,6 @@
         "phpunit/php-text-template",
         "phpunit/php-timer",
         "phpunit/phpunit",
-        "psr/cache",
         "sebastian/cli-parser",
         "sebastian/code-unit",
         "sebastian/code-unit-reverse-lookup",
@@ -10155,9 +10152,6 @@
         "spatie/flare-client-php",
         "spatie/ignition",
         "spatie/laravel-ignition",
-        "swagger-api/swagger-ui",
-        "symfony/yaml",
-        "theseer/tokenizer",
-        "zircote/swagger-php"
+        "theseer/tokenizer"
     ]
 }
