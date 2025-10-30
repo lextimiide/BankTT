@@ -15,35 +15,15 @@ services:
         value: https://bankt-1.onrender.com
       - key: L5_SWAGGER_CONST_HOST
         value: https://bankt-1.onrender.com
-      - key: DATABASE_URL
-        fromDatabase:
-          name: laravel-db
-          property: connectionString
-      - key: DATABASE_HOST
-        fromDatabase:
-          name: laravel-db
-          property: host
-      - key: DATABASE_NAME
-        fromDatabase:
-          name: laravel-db
-          property: database
-      - key: DATABASE_USER
-        fromDatabase:
-          name: laravel-db
-          property: user
-      - key: DATABASE_PASSWORD
-        fromDatabase:
-          name: laravel-db
-          property: password
-
-  - type: pserv
-    name: laravel-db
-    runtime: postgres
-    plan: starter
-    envVars:
-      - key: POSTGRES_DB
-        value: laravel
-      - key: POSTGRES_USER
-        value: laravel
-      - key: POSTGRES_PASSWORD
-        generateValue: true
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        value: dpg-d41b6smr433s73dr9ps0-a
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        value: banktest_db
+      - key: DB_USERNAME
+        value: banktest_db_user
+      - key: DB_PASSWORD
+        value: QplUV4WFifswwOZunv3RRymkVLUlhmoh
