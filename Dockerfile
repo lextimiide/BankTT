@@ -40,6 +40,18 @@ RUN composer install --no-dev --optimize-autoloader
 # Create .env file from .env.example if it doesn't exist
 RUN cp .env.example .env || true
 
+# Generate application key
+RUN php artisan key:generate
+
+# Run database migrations
+RUN php artisan migrate --force
+
+# Run database seeders
+RUN php artisan db:seed --force
+
+# Generate Swagger documentation
+RUN php artisan l5-swagger:generate
+
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
