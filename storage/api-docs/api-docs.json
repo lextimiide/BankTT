@@ -15,10 +15,6 @@
             "description": "Serveur de production Render"
         },
         {
-            "url": "http://localhost:8000/api/v1",
-            "description": "Serveur local de développement"
-        },
-        {
             "url": "/api/v1"
         }
     ],
@@ -443,10 +439,6 @@
                 },
                 "servers": [
                     {
-                        "url": "http://localhost:8000/api/v1",
-                        "description": "Serveur local de développement"
-                    },
-                    {
                         "url": "https://bankt-1.onrender.com/api/v1",
                         "description": "Serveur de production Render"
                     }
@@ -667,14 +659,197 @@
                 },
                 "servers": [
                     {
-                        "url": "http://localhost:8000/api/v1",
-                        "description": "Serveur local de développement"
-                    },
-                    {
                         "url": "https://bankt-1.onrender.com/api/v1",
                         "description": "Serveur de production Render"
                     }
                 ]
+            }
+        },
+        "/api/v1/comptes/{compteId}": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Récupérer un compte spécifique",
+                "description": "Permet de récupérer les détails d'un compte spécifique par son ID. La stratégie de recherche vérifie d'abord la base locale pour les comptes chèque ou épargne actifs, puis la base serverless si nécessaire.",
+                "operationId": "getCompteById",
+                "parameters": [
+                    {
+                        "name": "compteId",
+                        "in": "path",
+                        "description": "UUID du compte à récupérer",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Compte récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "format": "uuid",
+                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                },
+                                                "numeroCompte": {
+                                                    "type": "string",
+                                                    "example": "C00123456"
+                                                },
+                                                "titulaire": {
+                                                    "type": "string",
+                                                    "example": "Amadou Diallo"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "cheque",
+                                                        "epargne",
+                                                        "courant"
+                                                    ],
+                                                    "example": "epargne"
+                                                },
+                                                "solde": {
+                                                    "type": "number",
+                                                    "format": "decimal",
+                                                    "example": 1250000
+                                                },
+                                                "devise": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "FCFA",
+                                                        "EUR",
+                                                        "USD"
+                                                    ],
+                                                    "example": "FCFA"
+                                                },
+                                                "dateCreation": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-03-15T00:00:00Z"
+                                                },
+                                                "statut": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "actif",
+                                                        "inactif",
+                                                        "bloque",
+                                                        "ferme"
+                                                    ],
+                                                    "example": "bloque"
+                                                },
+                                                "motifBlocage": {
+                                                    "type": "string",
+                                                    "example": "Inactivité de 30+ jours",
+                                                    "nullable": true
+                                                },
+                                                "metadata": {
+                                                    "properties": {
+                                                        "derniereModification": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "example": "2023-06-10T14:30:00Z"
+                                                        },
+                                                        "version": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "client": {
+                                                    "$ref": "#/components/schemas/Client"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "traceId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "example": "COMPTE_NOT_FOUND"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Le compte avec l'ID spécifié n'existe pas"
+                                                },
+                                                "details": {
+                                                    "properties": {
+                                                        "compteId": {
+                                                            "type": "string",
+                                                            "format": "uuid",
+                                                            "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "traceId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/comptes/{id}": {
@@ -817,10 +992,6 @@
                 },
                 "servers": [
                     {
-                        "url": "http://localhost:8000/api/v1",
-                        "description": "Serveur local de développement"
-                    },
-                    {
                         "url": "https://bankt-1.onrender.com/api/v1",
                         "description": "Serveur de production Render"
                     }
@@ -911,10 +1082,6 @@
                     }
                 },
                 "servers": [
-                    {
-                        "url": "http://localhost:8000/api/v1",
-                        "description": "Serveur local de développement"
-                    },
                     {
                         "url": "https://bankt-1.onrender.com/api/v1",
                         "description": "Serveur de production Render"

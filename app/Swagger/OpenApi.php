@@ -18,10 +18,6 @@ use OpenApi\Annotations as OA;
  *     url="https://bankt-1.onrender.com/api/v1",
  *     description="Serveur de production Render"
  * )
- * @OA\Server(
- *     url="http://localhost:8000/api/v1",
- *     description="Serveur local de développement"
- * )
  * @OA\SecurityScheme(
  *     securityScheme="bearerAuth",
  *     type="http",

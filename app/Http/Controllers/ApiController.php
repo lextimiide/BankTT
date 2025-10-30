@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 
 /**
  * @OA\Server(
- *     url="http://localhost:8000/api/v1",
- *     description="Serveur local de développement"
+ *     url="https://bankt-1.onrender.com/api/v1",
+ *     description="Serveur de production Render"
  * )
  * @OA\Server(
  *     url="https://bankt-1.onrender.com/api/v1",

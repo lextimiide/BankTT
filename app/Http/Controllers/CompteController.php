@@ -31,10 +31,6 @@ class CompteController extends Controller
      *     operationId="getComptes",
      *     tags={"Comptes"},
      *     @OA\Server(
-     *         url="http://localhost:8000/api/v1",
-     *         description="Serveur local de développement"
-     *     ),
-     *     @OA\Server(
      *         url="https://bankt-1.onrender.com/api/v1",
      *         description="Serveur de production Render"
      *     ),
@@ -153,10 +149,6 @@ class CompteController extends Controller
      *     operationId="createCompte",
      *     tags={"Comptes"},
      *     @OA\Server(
-     *         url="http://localhost:8000/api/v1",
-     *         description="Serveur local de développement"
-     *     ),
-     *     @OA\Server(
      *         url="https://bankt-1.onrender.com/api/v1",
      *         description="Serveur de production Render"
      *     ),
@@ -256,22 +248,95 @@ class CompteController extends Controller
 
 
     /**
-     * Display the specified resource.
+     * @OA\Get(
+     *     path="/api/v1/comptes/{compteId}",
+     *     summary="Récupérer un compte spécifique",
+     *     description="Permet de récupérer les détails d'un compte spécifique par son ID. La stratégie de recherche vérifie d'abord la base locale pour les comptes chèque ou épargne actifs, puis la base serverless si nécessaire.",
+     *     operationId="getCompteById",
+     *     tags={"Comptes"},
+     *     @OA\Parameter(
+     *         name="compteId",
+     *         in="path",
+     *         description="UUID du compte à récupérer",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte récupéré avec succès",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                 @OA\Property(property="numeroCompte", type="string", example="C00123456"),
+     *                 @OA\Property(property="titulaire", type="string", example="Amadou Diallo"),
+     *                 @OA\Property(property="type", type="string", enum={"cheque", "epargne", "courant"}, example="epargne"),
+     *                 @OA\Property(property="solde", type="number", format="decimal", example=1250000),
+     *                 @OA\Property(property="devise", type="string", enum={"FCFA", "EUR", "USD"}, example="FCFA"),
+     *                 @OA\Property(property="dateCreation", type="string", format="date-time", example="2023-03-15T00:00:00Z"),
+     *                 @OA\Property(property="statut", type="string", enum={"actif", "inactif", "bloque", "ferme"}, example="bloque"),
+     *                 @OA\Property(property="motifBlocage", type="string", example="Inactivité de 30+ jours", nullable=true),
+     *                 @OA\Property(property="metadata", type="object",
+     *                     @OA\Property(property="derniereModification", type="string", format="date-time", example="2023-06-10T14:30:00Z"),
+     *                     @OA\Property(property="version", type="integer", example=1)
+     *                 ),
+     *                 @OA\Property(property="client", ref="#/components/schemas/Client")
+     *             ),
+     *             @OA\Property(property="timestamp", type="string", format="date-time"),
+     *             @OA\Property(property="path", type="string"),
+     *             @OA\Property(property="traceId", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="error", type="object",
+     *                 @OA\Property(property="code", type="string", example="COMPTE_NOT_FOUND"),
+     *                 @OA\Property(property="message", type="string", example="Le compte avec l'ID spécifié n'existe pas"),
+     *                 @OA\Property(property="details", type="object",
+     *                     @OA\Property(property="compteId", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000")
+     *                 )
+     *             ),
+     *             @OA\Property(property="timestamp", type="string", format="date-time"),
+     *             @OA\Property(property="path", type="string"),
+     *             @OA\Property(property="traceId", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne du serveur",
+     *         @OA\JsonContent(ref="#/components/schemas/Error")
+     *     )
+     * )
      */
-    public function show(string $id): CompteResource
+    public function show(Compte $compte)
     {
         try {
-            $compte = $this->compteService->getCompteById($id);
-            return new CompteResource($compte->load('client'));
+            // Route Model Binding automatically loads the compte with client relationship
+            return $this->successResponse(
+                new CompteResource($compte->load('client')),
+                'Compte récupéré avec succès'
+            );
         } catch (ModelNotFoundException $e) {
-            throw $e; // Will be handled by Laravel's exception handler
+            return $this->errorResponse(
+                'Le compte avec l\'ID spécifié n\'existe pas',
+                404,
+                [
+                    'code' => 'COMPTE_NOT_FOUND',
+                    'details' => ['compteId' => $compte->id ?? request('compteId')]
+                ]
+            );
         } catch (\Exception $e) {
             \Log::error('Erreur lors de la récupération du compte', [
-                'compte_id' => $id,
+                'compte_id' => $compte->id ?? request('compteId'),
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            throw new ApiException('Erreur lors de la récupération du compte', 500);
+            return $this->errorResponse('Erreur interne du serveur', 500);
         }
     }
 
@@ -282,10 +347,6 @@ class CompteController extends Controller
      *     description="Met à jour les informations du client associé au compte bancaire. Tous les champs sont optionnels mais au moins un champ doit être fourni.",
      *     operationId="updateCompte",
      *     tags={"Comptes"},
-     *     @OA\Server(
-     *         url="http://localhost:8000/api/v1",
-     *         description="Serveur local de développement"
-     *     ),
      *     @OA\Server(
      *         url="https://bankt-1.onrender.com/api/v1",
      *         description="Serveur de production Render"
@@ -372,10 +433,6 @@ class CompteController extends Controller
      *     description="Supprime un compte bancaire de manière logicielle. Seuls les comptes actifs peuvent être supprimés. Le compte reste en base de données avec un timestamp de suppression.",
      *     operationId="deleteCompte",
      *     tags={"Comptes"},
-     *     @OA\Server(
-     *         url="http://localhost:8000/api/v1",
-     *         description="Serveur local de développement"
-     *     ),
      *     @OA\Server(
      *         url="https://bankt-1.onrender.com/api/v1",
      *         description="Serveur de production Render"
