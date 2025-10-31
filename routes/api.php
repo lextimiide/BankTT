@@ -37,10 +37,12 @@ Route::prefix('v1')->middleware(['api'])->group(function () {
 
     // Routes des comptes bancaires (avec authentification et autorisation)
     Route::prefix('comptes')->middleware(['throttle:api'])->group(function () {
-        // Routes publiques (pas d'authentification requise pour certaines actions)
-        Route::post('/', [CompteController::class, 'store'])
-            ->name('comptes.store')
-            ->middleware('App\Http\Middleware\LoggingMiddleware');
+        // Routes nécessitant une authentification Admin pour création
+        Route::middleware(['auth.api'])->group(function () {
+            Route::post('/', [CompteController::class, 'store'])
+                ->name('comptes.store')
+                ->middleware(['role:admin', 'App\Http\Middleware\LoggingMiddleware']);
+        });
 
         // Routes nécessitant une authentification
         Route::middleware(['auth.api'])->group(function () {
