@@ -26,7 +26,7 @@ class AdminSeeder extends Seeder
 
     /**
      * Créer des admins pour l'environnement de production
-     * Pas de Faker pour éviter les erreurs en production
+     * Utilise firstOrCreate pour éviter les doublons
      */
     private function createProductionAdmins(): void
     {
@@ -50,11 +50,14 @@ class AdminSeeder extends Seeder
         ];
 
         foreach ($defaultAdmins as $adminData) {
-            Admin::create($adminData);
-            $this->command->info("✅ Admin créé : {$adminData['prenom']} {$adminData['nom']} ({$adminData['email']})");
+            Admin::firstOrCreate(
+                ['email' => $adminData['email']], // Condition de recherche
+                $adminData // Données à créer si non trouvé
+            );
+            $this->command->info("✅ Admin créé/mis à jour : {$adminData['prenom']} {$adminData['nom']} ({$adminData['email']})");
         }
 
-        $this->command->info("🎉 {$this->countCreatedAdmins()} admins créés avec succès en production.");
+        $this->command->info("🎉 " . Admin::count() . " admins présents en base de données.");
     }
 
     /**
