@@ -100,12 +100,30 @@ class AdminSeeder extends Seeder
 
         if ($existingCount < $targetCount) {
             $additionalAdminsCount = $targetCount - $existingCount;
-            $this->command->info("🎲 Création de {$additionalAdminsCount} admins supplémentaires avec Faker...");
+            $this->command->info("🎲 Création de {$additionalAdminsCount} admins supplémentaires...");
 
-            Admin::factory($additionalAdminsCount)->create();
+            if (App::environment('production')) {
+                // En production, créer des admins statiques
+                for ($i = 1; $i <= $additionalAdminsCount; $i++) {
+                    Admin::firstOrCreate(
+                        ['email' => "admin{$i}@banque.com"],
+                        [
+                            'nom' => "Admin{$i}",
+                            'prenom' => "Test{$i}",
+                            'email' => "admin{$i}@banque.com",
+                            'password' => Hash::make('password123'),
+                            'email_verified_at' => now(),
+                        ]
+                    );
+                    $this->command->info("✅ Admin créé : Test{$i} Admin{$i} (admin{$i}@banque.com)");
+                }
+            } else {
+                // En développement, utiliser Faker
+                Admin::factory($additionalAdminsCount)->create();
 
-            foreach (Admin::latest()->take($additionalAdminsCount)->get() as $admin) {
-                $this->command->info("✅ Admin Faker créé : {$admin->prenom} {$admin->nom} ({$admin->email})");
+                foreach (Admin::latest()->take($additionalAdminsCount)->get() as $admin) {
+                    $this->command->info("✅ Admin Faker créé : {$admin->prenom} {$admin->nom} ({$admin->email})");
+                }
             }
         } else {
             $this->command->info("ℹ️  Nombre d'admins suffisant ({$existingCount}), pas de création supplémentaire.");

@@ -13,9 +13,30 @@ class ClientSeeder extends Seeder
     public function run(): void
     {
         // Créer seulement 8 clients aléatoires (pas trop)
-        \App\Models\Client::factory(8)->create([
-            'password' => bcrypt('password123'),
-        ]);
+        // En production, éviter Faker et créer des données statiques
+        if (app()->environment('production')) {
+            // Créer des clients statiques pour la production
+            for ($i = 1; $i <= 8; $i++) {
+                \App\Models\Client::firstOrCreate(
+                    ['email' => "client{$i}@example.com"],
+                    [
+                        'titulaire' => "Client Test {$i}",
+                        'nci' => str_pad($i, 13, '0', STR_PAD_LEFT),
+                        'email' => "client{$i}@example.com",
+                        'telephone' => "77123456{$i}",
+                        'adresse' => "Adresse {$i}, Dakar, Sénégal",
+                        'statut' => 'actif',
+                        'password' => bcrypt('password123'),
+                        'email_verified_at' => now(),
+                    ]
+                );
+            }
+        } else {
+            // En développement, utiliser Faker
+            \App\Models\Client::factory(8)->create([
+                'password' => bcrypt('password123'),
+            ]);
+        }
 
         // Créer quelques clients spécifiques pour les tests avec numéros sénégalais valides
         // Utilise firstOrCreate pour éviter les doublons
