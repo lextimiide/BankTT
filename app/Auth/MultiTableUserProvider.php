@@ -31,7 +31,8 @@ class MultiTableUserProvider implements UserProvider
         foreach ($this->models as $modelClass) {
             Log::info("MultiTableUserProvider: Checking model: {$modelClass}");
 
-            $user = $modelClass::find($identifier);
+            // Try to find by ID, handling both UUID and integer formats
+            $user = $modelClass::where('id', $identifier)->first();
 
             if ($user) {
                 Log::info("MultiTableUserProvider: Found user in {$modelClass}: {$user->id}");
