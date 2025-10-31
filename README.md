@@ -1,66 +1,103 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel Banking API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This is a Laravel-based banking API application with Docker support for easy deployment.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- User authentication and authorization
+- Account management (create, block, unblock accounts)
+- Transaction processing
+- Swagger API documentation
+- PostgreSQL database
+- Docker containerization
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Local Development
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Prerequisites
 
-## Learning Laravel
+- Docker and Docker Compose installed on your system
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Setup
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+1. Clone the repository
+2. Copy `.env.example` to `.env` and configure your environment variables
+3. Run the application:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+docker compose up --build
+```
 
-## Laravel Sponsors
+The application will be available at `http://localhost:8000`
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### API Documentation
 
-### Premium Partners
+Once the application is running, you can access the Swagger UI at:
+`http://localhost:8000/api/documentation`
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## Deployment on Render
 
-## Contributing
+### Prerequisites
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- A Render account
+- A PostgreSQL database instance on Render (or another cloud provider)
 
-## Code of Conduct
+### Deployment Steps
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1. **Create a PostgreSQL Database on Render:**
+   - Go to your Render dashboard
+   - Create a new PostgreSQL database
+   - Note down the connection details (host, port, database name, username, password)
 
-## Security Vulnerabilities
+2. **Deploy the Application:**
+   - In your Render dashboard, create a new "Web Service"
+   - Connect your GitHub repository
+   - Choose "Docker" as the runtime
+   - Set the following environment variables in Render:
+     ```
+     APP_ENV=production
+     APP_DEBUG=false
+     APP_KEY=<your-app-key>  # Generate with php artisan key:generate
+     DB_CONNECTION=pgsql
+     DB_HOST=<your-postgres-host>
+     DB_PORT=5432
+     DB_DATABASE=<your-database-name>
+     DB_USERNAME=<your-username>
+     DB_PASSWORD=<your-password>
+     ```
+   - Set the build command to: `docker build -t myapp .`
+   - Set the start command to: `docker run -p $PORT:8000 myapp`
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+3. **Database Migration:**
+   - After deployment, you may need to run migrations manually
+   - You can do this by connecting to your Render service via SSH or by adding a migration command to your deployment script
 
-## License
+4. **Access the Application:**
+   - Your API will be available at the URL provided by Render
+   - API documentation: `https://your-render-url.com/api/documentation`
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Environment Variables for Render
+
+Make sure to set these environment variables in your Render service:
+
+- `APP_ENV=production`
+- `APP_DEBUG=false`
+- `APP_KEY` (generate a new one for production)
+- Database connection details as shown above
+- `PORT` (automatically set by Render, used in nginx.conf)
+
+### Notes
+
+- The application uses PostgreSQL as the database
+- Swagger documentation is automatically generated
+- The Docker setup includes both the Laravel app and PostgreSQL for local development
+- For production, use an external PostgreSQL instance (like Render's managed database)
+
+## API Endpoints
+
+The API provides endpoints for:
+- Authentication (login/register)
+- Account management
+- Transactions
+- Admin operations
+
+Refer to the Swagger documentation for detailed API specifications.

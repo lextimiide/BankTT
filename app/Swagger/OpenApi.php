@@ -23,7 +23,14 @@ use OpenApi\Annotations as OA;
  *     type="http",
  *     scheme="bearer",
  *     bearerFormat="JWT",
- *     description="Authentification JWT - Utilisez le format: Bearer {token}"
+ *     description="Authentification JWT - Utilisez le format: Bearer {token} ou les cookies d'authentification"
+ * )
+ * @OA\SecurityScheme(
+ *     securityScheme="cookieAuth",
+ *     type="apiKey",
+ *     in="cookie",
+ *     name="access_token",
+ *     description="Authentification via cookie - Le token est automatiquement inclus dans les requêtes"
  * )
  * @OA\Tag(
  *     name="Comptes",
@@ -36,6 +43,10 @@ use OpenApi\Annotations as OA;
  * @OA\Tag(
  *     name="Transactions",
  *     description="Gestion des transactions"
+ * )
+ * @OA\Tag(
+ *     name="Authentification",
+ *     description="Authentification et gestion des tokens"
  * )
  * @OA\Schema(
  *     schema="Error",
@@ -95,6 +106,37 @@ use OpenApi\Annotations as OA;
  *     @OA\Property(property="client", ref="#/components/schemas/Client", description="Informations du client"),
  *     @OA\Property(property="created_at", type="string", format="date-time", description="Date de création"),
  *     @OA\Property(property="updated_at", type="string", format="date-time", description="Date de dernière modification")
+ * )
+ * @OA\Schema(
+ *     schema="LoginRequest",
+ *     type="object",
+ *     title="Login Request",
+ *     description="Données de connexion",
+ *     required={"email", "password"},
+ *     @OA\Property(property="email", type="string", format="email", description="Adresse email de l'utilisateur"),
+ *     @OA\Property(property="password", type="string", description="Mot de passe")
+ * )
+ * @OA\Schema(
+ *     schema="LoginResponse",
+ *     type="object",
+ *     title="Login Response",
+ *     description="Réponse de connexion",
+ *     @OA\Property(property="success", type="boolean", example=true),
+ *     @OA\Property(property="message", type="string", example="Connexion réussie"),
+ *     @OA\Property(property="data", type="object",
+ *         @OA\Property(property="user", type="object",
+ *             @OA\Property(property="id", type="string", description="ID de l'utilisateur"),
+ *             @OA\Property(property="nom", type="string", description="Nom (pour Admin)"),
+ *             @OA\Property(property="prenom", type="string", description="Prénom (pour Admin)"),
+ *             @OA\Property(property="titulaire", type="string", description="Nom complet (pour Client)"),
+ *             @OA\Property(property="email", type="string", description="Email"),
+ *             @OA\Property(property="role", type="string", enum={"admin", "client"}, description="Rôle de l'utilisateur")
+ *         ),
+ *         @OA\Property(property="token_type", type="string", example="Bearer")
+ *     ),
+ *     @OA\Property(property="timestamp", type="string", format="date-time"),
+ *     @OA\Property(property="path", type="string"),
+ *     @OA\Property(property="traceId", type="string")
  * )
  */
 class OpenApi

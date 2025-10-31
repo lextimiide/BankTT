@@ -13,7 +13,9 @@ class ClientSeeder extends Seeder
     public function run(): void
     {
         // Créer seulement 8 clients aléatoires (pas trop)
-        \App\Models\Client::factory(8)->create();
+        \App\Models\Client::factory(8)->create([
+            'password' => bcrypt('password123'),
+        ]);
 
         // Créer quelques clients spécifiques pour les tests avec numéros sénégalais valides
         \App\Models\Client::create([
@@ -23,6 +25,8 @@ class ClientSeeder extends Seeder
             'telephone' => '771234567',
             'adresse' => 'Dakar, Sénégal',
             'statut' => 'actif',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
         ]);
 
         \App\Models\Client::create([
@@ -32,6 +36,8 @@ class ClientSeeder extends Seeder
             'telephone' => '701234567',
             'adresse' => 'Saint-Louis, Sénégal',
             'statut' => 'actif',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
         ]);
 
         \App\Models\Client::create([
@@ -41,6 +47,8 @@ class ClientSeeder extends Seeder
             'telephone' => '781234567',
             'adresse' => 'Thiès, Sénégal',
             'statut' => 'actif',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
         ]);
 
         \App\Models\Client::create([
@@ -50,6 +58,8 @@ class ClientSeeder extends Seeder
             'telephone' => '761234567',
             'adresse' => 'Kaolack, Sénégal',
             'statut' => 'inactif',
+            'password' => bcrypt('password123'),
+            'email_verified_at' => now(),
         ]);
     }
 }

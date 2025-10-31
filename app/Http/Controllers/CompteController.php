@@ -171,12 +171,20 @@ class CompteController extends Controller
      *             @OA\Property(property="soldeInitial", type="number", format="decimal", minimum=10000, example=15000),
      *             @OA\Property(property="devise", type="string", enum={"FCFA", "EUR", "USD"}, example="FCFA"),
      *             @OA\Property(property="client", type="object",
-     *                 required={"titulaire","email","telephone","adresse","nci"},
-     *                 @OA\Property(property="titulaire", type="string", example="Test User 2"),
-     *                 @OA\Property(property="email", type="string", format="email", example="test2@example.com"),
-     *                 @OA\Property(property="telephone", type="string", example="771234569"),
-     *                 @OA\Property(property="adresse", type="string", example="Test Address 2"),
-     *                 @OA\Property(property="nci", type="string", example="1234567890124", description="Numéro de carte d'identité nationale")
+     *                 oneOf={
+     *                     @OA\Schema(
+     *                         required={"id"},
+     *                         @OA\Property(property="id", type="string", format="uuid", description="ID du client existant", example="550e8400-e29b-41d4-a716-446655440000")
+     *                     ),
+     *                     @OA\Schema(
+     *                         required={"titulaire","email","telephone","adresse","nci"},
+     *                         @OA\Property(property="titulaire", type="string", example="Test User 2"),
+     *                         @OA\Property(property="email", type="string", format="email", example="test2@example.com"),
+     *                         @OA\Property(property="telephone", type="string", example="771234569"),
+     *                         @OA\Property(property="adresse", type="string", example="Test Address 2"),
+     *                         @OA\Property(property="nci", type="string", example="1234567890124", description="Numéro de carte d'identité nationale")
+     *                     )
+     *                 }
      *             )
      *         )
      *     ),

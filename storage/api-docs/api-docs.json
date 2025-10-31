@@ -227,6 +227,200 @@
                 }
             }
         },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Connexion utilisateur",
+                "description": "Authentifie un utilisateur (Admin ou Client) et retourne les tokens dans les cookies",
+                "operationId": "login",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Connexion réussie",
+                        "headers": {
+                            "Set-Cookie": {
+                                "description": "Cookies d'authentification (access_token et refresh_token)",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "access_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...; HttpOnly; Secure; SameSite=Lax, refresh_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...; HttpOnly; Secure; SameSite=Lax"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Rafraîchir le token d'accès",
+                "description": "Utilise le refresh token pour obtenir un nouveau token d'accès",
+                "operationId": "refresh",
+                "responses": {
+                    "200": {
+                        "description": "Token rafraîchi avec succès",
+                        "headers": {
+                            "Set-Cookie": {
+                                "description": "Nouveaux cookies d'authentification (access_token et refresh_token)",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "access_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...; HttpOnly; Secure; SameSite=Lax, refresh_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...; HttpOnly; Secure; SameSite=Lax"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Token rafraîchi avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "token_type": {
+                                                    "type": "string",
+                                                    "example": "Bearer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "traceId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token invalide ou expiré",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [],
+                        "cookieAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Déconnexion utilisateur",
+                "description": "Déconnecte l'utilisateur et invalide tous ses tokens",
+                "operationId": "logout",
+                "responses": {
+                    "200": {
+                        "description": "Déconnexion réussie",
+                        "headers": {
+                            "Set-Cookie": {
+                                "description": "Cookies d'authentification supprimés (access_token et refresh_token)",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "access_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax, refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Déconnexion réussie"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "traceId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Utilisateur non authentifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [],
+                        "cookieAuth": []
+                    }
+                ]
+            }
+        },
         "/comptes": {
             "get": {
                 "tags": [
@@ -497,38 +691,57 @@
                                         "example": "FCFA"
                                     },
                                     "client": {
-                                        "required": [
-                                            "titulaire",
-                                            "email",
-                                            "telephone",
-                                            "adresse",
-                                            "nci"
-                                        ],
-                                        "properties": {
-                                            "titulaire": {
-                                                "type": "string",
-                                                "example": "Test User 2"
+                                        "type": "object",
+                                        "oneOf": [
+                                            {
+                                                "required": [
+                                                    "id"
+                                                ],
+                                                "properties": {
+                                                    "id": {
+                                                        "description": "ID du client existant",
+                                                        "type": "string",
+                                                        "format": "uuid",
+                                                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                    }
+                                                },
+                                                "type": "object"
                                             },
-                                            "email": {
-                                                "type": "string",
-                                                "format": "email",
-                                                "example": "test2@example.com"
-                                            },
-                                            "telephone": {
-                                                "type": "string",
-                                                "example": "771234569"
-                                            },
-                                            "adresse": {
-                                                "type": "string",
-                                                "example": "Test Address 2"
-                                            },
-                                            "nci": {
-                                                "description": "Numéro de carte d'identité nationale",
-                                                "type": "string",
-                                                "example": "1234567890124"
+                                            {
+                                                "required": [
+                                                    "titulaire",
+                                                    "email",
+                                                    "telephone",
+                                                    "adresse",
+                                                    "nci"
+                                                ],
+                                                "properties": {
+                                                    "titulaire": {
+                                                        "type": "string",
+                                                        "example": "Test User 2"
+                                                    },
+                                                    "email": {
+                                                        "type": "string",
+                                                        "format": "email",
+                                                        "example": "test2@example.com"
+                                                    },
+                                                    "telephone": {
+                                                        "type": "string",
+                                                        "example": "771234569"
+                                                    },
+                                                    "adresse": {
+                                                        "type": "string",
+                                                        "example": "Test Address 2"
+                                                    },
+                                                    "nci": {
+                                                        "description": "Numéro de carte d'identité nationale",
+                                                        "type": "string",
+                                                        "example": "1234567890124"
+                                                    }
+                                                },
+                                                "type": "object"
                                             }
-                                        },
-                                        "type": "object"
+                                        ]
                                     }
                                 },
                                 "type": "object"
@@ -1687,14 +1900,107 @@
                     }
                 },
                 "type": "object"
+            },
+            "LoginRequest": {
+                "title": "Login Request",
+                "description": "Données de connexion",
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "description": "Adresse email de l'utilisateur",
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "password": {
+                        "description": "Mot de passe",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "LoginResponse": {
+                "title": "Login Response",
+                "description": "Réponse de connexion",
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Connexion réussie"
+                    },
+                    "data": {
+                        "properties": {
+                            "user": {
+                                "properties": {
+                                    "id": {
+                                        "description": "ID de l'utilisateur",
+                                        "type": "string"
+                                    },
+                                    "nom": {
+                                        "description": "Nom (pour Admin)",
+                                        "type": "string"
+                                    },
+                                    "prenom": {
+                                        "description": "Prénom (pour Admin)",
+                                        "type": "string"
+                                    },
+                                    "titulaire": {
+                                        "description": "Nom complet (pour Client)",
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "description": "Email",
+                                        "type": "string"
+                                    },
+                                    "role": {
+                                        "description": "Rôle de l'utilisateur",
+                                        "type": "string",
+                                        "enum": [
+                                            "admin",
+                                            "client"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "token_type": {
+                                "type": "string",
+                                "example": "Bearer"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "traceId": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",
-                "description": "Authentification JWT - Utilisez le format: Bearer {token}",
+                "description": "Authentification JWT - Utilisez le format: Bearer {token} ou les cookies d'authentification",
                 "bearerFormat": "JWT",
                 "scheme": "bearer"
+            },
+            "cookieAuth": {
+                "type": "apiKey",
+                "description": "Authentification via cookie - Le token est automatiquement inclus dans les requêtes",
+                "name": "access_token",
+                "in": "cookie"
             }
         }
     },
@@ -1706,6 +2012,10 @@
         {
             "name": "Clients",
             "description": "Gestion des clients"
+        },
+        {
+            "name": "Authentification",
+            "description": "Authentification et gestion des tokens"
         }
     ]
 }
