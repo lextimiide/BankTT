@@ -7356,3 +7356,31 @@ DETAIL:  Key (email)=(admin@banque.com) already exists. at /var/www/html/vendor/
 #44 /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(16): require_once('/var/www/html/p...')
 #45 {main}
 "} 
+[2025-10-31 19:24:59] local.INFO: MultiTableUserProvider: Searching for user with ID:   
+[2025-10-31 19:24:59] local.INFO: MultiTableUserProvider: Checking model: App\Models\Admin  
+[2025-10-31 19:24:59] local.INFO: MultiTableUserProvider: Checking model: App\Models\Client  
+[2025-10-31 19:24:59] local.WARNING: MultiTableUserProvider: User not found with ID:   
+[2025-10-31 19:25:27] local.INFO: MultiTableUserProvider: Searching for user with ID:   
+[2025-10-31 19:25:27] local.INFO: MultiTableUserProvider: Checking model: App\Models\Admin  
+[2025-10-31 19:25:27] local.INFO: MultiTableUserProvider: Checking model: App\Models\Client  
+[2025-10-31 19:25:27] local.WARNING: MultiTableUserProvider: User not found with ID:   
+[2025-10-31 19:25:46] local.INFO: MultiTableUserProvider: Searching for user with ID:   
+[2025-10-31 19:25:46] local.INFO: MultiTableUserProvider: Checking model: App\Models\Admin  
+[2025-10-31 19:25:46] local.INFO: MultiTableUserProvider: Checking model: App\Models\Client  
+[2025-10-31 19:25:46] local.WARNING: MultiTableUserProvider: User not found with ID:   
+[2025-10-31 19:26:46] local.INFO: MultiTableUserProvider: Searching for user with ID: a03f5426-3dc5-4c6e-a2a2-a016e000b778  
+[2025-10-31 19:26:46] local.INFO: MultiTableUserProvider: Checking model: App\Models\Admin  
+[2025-10-31 19:26:46] local.INFO: MultiTableUserProvider: Checking model: App\Models\Client  
+[2025-10-31 19:26:46] local.INFO: MultiTableUserProvider: Found user in App\Models\Client: a03f5426-3dc5-4c6e-a2a2-a016e000b778  
+[2025-10-31 19:27:57] local.INFO: MultiTableUserProvider: Searching for user with ID: a03f5426-3dc5-4c6e-a2a2-a016e000b778  
+[2025-10-31 19:27:57] local.INFO: MultiTableUserProvider: Checking model: App\Models\Admin  
+[2025-10-31 19:27:57] local.INFO: MultiTableUserProvider: Checking model: App\Models\Client  
+[2025-10-31 19:27:57] local.INFO: MultiTableUserProvider: Found user in App\Models\Client: a03f5426-3dc5-4c6e-a2a2-a016e000b778  
+[2025-10-31 19:28:27] local.INFO: MultiTableUserProvider: Searching for user with ID:   
+[2025-10-31 19:28:27] local.INFO: MultiTableUserProvider: Checking model: App\Models\Admin  
+[2025-10-31 19:28:27] local.INFO: MultiTableUserProvider: Checking model: App\Models\Client  
+[2025-10-31 19:28:27] local.WARNING: MultiTableUserProvider: User not found with ID:   
+[2025-10-31 19:31:13] local.INFO: MultiTableUserProvider: Searching for user with ID:   
+[2025-10-31 19:31:13] local.INFO: MultiTableUserProvider: Checking model: App\Models\Admin  
+[2025-10-31 19:31:13] local.INFO: MultiTableUserProvider: Checking model: App\Models\Client  
+[2025-10-31 19:31:13] local.WARNING: MultiTableUserProvider: User not found with ID:   
