@@ -53,7 +53,7 @@ class CompteController extends Controller
      *     operationId="getComptes",
      *     tags={"Comptes"},
      *     @OA\Server(
-     *         url="https://bankt-1.onrender.com/api/v1",
+     *         url="https://banktt.onrender.com/api/v1",
      *         description="Serveur de production Render"
      *     ),
      *     @OA\Server(
@@ -176,7 +176,7 @@ class CompteController extends Controller
      *     operationId="createCompte",
      *     tags={"Comptes"},
      *     @OA\Server(
-     *          url="https://bankt-1.onrender.com/api/v1",
+     *          url="https://banktt.onrender.com/api/v1",
      *         description="Serveur de production Render"
      *        
      *     ),
@@ -333,7 +333,7 @@ class CompteController extends Controller
      *     operationId="getCompteByNumero",
      *     tags={"Comptes"},
      *     @OA\Server(
-     *         url="https://bankt-1.onrender.com/api/v1",
+     *         url="https://banktt.onrender.com/api/v1",
      *         description="Serveur de production Render"
      *     ),
      *     @OA\Server(
@@ -423,7 +423,7 @@ class CompteController extends Controller
      *     operationId="getCompteById",
      *     tags={"Comptes"},
      *     @OA\Server(
-     *         url="https://bankt-1.onrender.com/api/v1",
+     *         url="https://banktt.onrender.com/api/v1",
      *         description="Serveur de production Render"
      *     ),
      *     @OA\Server(
@@ -532,7 +532,7 @@ class CompteController extends Controller
      *     operationId="updateCompte",
      *     tags={"Comptes"},
      *     @OA\Server(
-     *         url="https://bankt-1.onrender.com/api/v1",
+     *         url="https://banktt.onrender.com/api/v1",
      *         description="Serveur de production Render"
      *     ),
      *     @OA\Server(
@@ -622,7 +622,7 @@ class CompteController extends Controller
      *     operationId="blockCompte",
      *     tags={"Comptes"},
      *     @OA\Server(
-     *         url="https://bankt-1.onrender.com/api/v1",
+     *         url="https://banktt.onrender.com/api/v1",
      *         description="Serveur de production Render"
      *     ),
      *     @OA\Server(
@@ -719,7 +719,7 @@ class CompteController extends Controller
      *     operationId="unblockCompte",
      *     tags={"Comptes"},
      *     @OA\Server(
-     *         url="https://bankt-1.onrender.com/api/v1",
+     *         url="https://banktt.onrender.com/api/v1",
      *         description="Serveur de production Render"
      *     ),
      *     @OA\Server(
@@ -806,7 +806,7 @@ class CompteController extends Controller
      *     operationId="deleteCompte",
      *     tags={"Comptes"},
      *     @OA\Server(
-     *         url="https://bankt-1.onrender.com/api/v1",
+     *         url="https://banktt.onrender.com/api/v1",
      *         description="Serveur de production Render"
      *     ),
      *     @OA\Server(

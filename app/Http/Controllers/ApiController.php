@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
  *     description="Serveur de production Render"
  * )
  * @OA\Server(
- *     url="https://bankt-1.onrender.com/api/v1",
+ *     url="https://banktt.onrender.com/api/v1",
  *     description="Serveur de production Render"
  * )
  *
