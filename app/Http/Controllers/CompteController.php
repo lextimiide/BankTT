@@ -258,24 +258,69 @@ class CompteController extends Controller
         try {
             $compte = $this->compteService->createCompte($request->validated());
 
-            return $this->successResponse(
-                new CompteResource($compte),
-                'Compte créé avec succès',
-                201
-            );
+            return response()->json([
+                'success' => true,
+                'message' => 'Compte créé avec succès',
+                'data' => [
+                    'id' => $compte->id,
+                    'numeroCompte' => $compte->numero_compte,
+                    'titulaire' => $compte->client->titulaire,
+                    'type' => $compte->type,
+                    'solde' => $compte->solde,
+                    'devise' => $compte->devise,
+                    'dateCreation' => $compte->created_at->toISOString(),
+                    'statut' => $compte->statut,
+                    'metadata' => [
+                        'derniereModification' => $compte->updated_at->toISOString(),
+                        'version' => 1,
+                    ],
+                ],
+                'timestamp' => now()->toISOString(),
+                'path' => $request->path(),
+                'traceId' => uniqid()
+            ], 201);
         } catch (ValidationException $e) {
-            return $this->errorResponse('Données de validation invalides', 422, $e->errors());
+            return response()->json([
+                'success' => false,
+                'message' => 'Données de validation invalides',
+                'errorCode' => 'VALIDATION_ERROR',
+                'errors' => $e->errors(),
+                'timestamp' => now()->toISOString(),
+                'path' => $request->path(),
+                'traceId' => uniqid()
+            ], 422);
         } catch (ModelNotFoundException $e) {
-            return $this->errorResponse('Client non trouvé', 404);
+            return response()->json([
+                'success' => false,
+                'message' => 'Client non trouvé',
+                'errorCode' => 'CLIENT_NOT_FOUND',
+                'timestamp' => now()->toISOString(),
+                'path' => $request->path(),
+                'traceId' => uniqid()
+            ], 404);
         } catch (ApiException $e) {
-            return $this->errorResponse($e->getMessage(), $e->getCode() ?: 400);
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errorCode' => 'API_ERROR',
+                'timestamp' => now()->toISOString(),
+                'path' => $request->path(),
+                'traceId' => uniqid()
+            ], $e->getCode() ?: 400);
         } catch (\Exception $e) {
             \Log::error('Erreur lors de la création du compte', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'request' => $request->all()
             ]);
-            return $this->errorResponse('Erreur interne du serveur', 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur interne du serveur',
+                'errorCode' => 'INTERNAL_ERROR',
+                'timestamp' => now()->toISOString(),
+                'path' => $request->path(),
+                'traceId' => uniqid()
+            ], 500);
         }
     }
 
