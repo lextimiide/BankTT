@@ -43,9 +43,9 @@ RUN cp .env.example .env || true
 # Generate application key
 RUN php artisan key:generate
 
-# Skip database migrations and seeders in Docker build (will be done at runtime)
-# RUN php artisan migrate --force
-# RUN php artisan db:seed --force || echo "Seeders skipped - Faker not available in production"
+# Run database migrations and seed production data
+RUN php artisan migrate --force
+RUN php artisan app:seed-production-data --force
 
 # Generate Swagger documentation
 RUN php artisan l5-swagger:generate
