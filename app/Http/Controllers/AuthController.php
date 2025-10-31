@@ -68,19 +68,9 @@ class AuthController extends Controller
             ]);
         }
 
-        // Authentifier l'utilisateur manuellement
-        Auth::login($user);
-
-        // Générer un token de session simple
-        $sessionToken = hash('sha256', $user->id . $user->email . now()->timestamp . uniqid());
-
-        // Stocker les informations en session
-        session([
-            'auth_user_id' => $user->id,
-            'auth_user_type' => $user instanceof Admin ? 'admin' : 'client',
-            'auth_token' => $sessionToken,
-            'auth_expires' => now()->addMinutes(60)->timestamp, // 1 heure
-        ]);
+        // Créer les tokens OAuth2 avec Passport
+        $accessToken = $user->createToken('API Access Token')->accessToken;
+        $refreshToken = $user->createToken('API Refresh Token')->accessToken;
 
         // Préparer la réponse
         $response = response()->json([
@@ -99,14 +89,17 @@ class AuthController extends Controller
                     'email' => $user->email,
                     'role' => $user->role,
                 ],
+                'access_token' => $accessToken,
+                'token_type' => 'Bearer',
             ],
             'timestamp' => now()->toISOString(),
             'path' => $request->path(),
             'traceId' => uniqid()
         ]);
 
-        // Stocker le token de session dans les cookies
-        $response->cookie('session_token', $sessionToken, 60, '/', null, false, true); // 60 minutes
+        // Stocker les tokens dans les cookies (HttpOnly pour sécurité)
+        $response->cookie('access_token', $accessToken, 60, '/', null, false, true); // 60 minutes
+        $response->cookie('refresh_token', $refreshToken, 60 * 24 * 7, '/', null, false, true); // 7 jours
 
         return $response;
     }
@@ -147,57 +140,45 @@ class AuthController extends Controller
      */
     public function refresh(Request $request)
     {
-        // Vérifier le token de session
-        $sessionToken = $request->cookie('session_token');
+        // Vérifier l'utilisateur authentifié via Passport
+        $user = Auth::guard('api')->user();
 
-        if (!$sessionToken || $sessionToken !== session('auth_token')) {
+        if (!$user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Session invalide ou expirée',
-                'errorCode' => 'INVALID_SESSION',
+                'message' => 'Token invalide ou expiré',
+                'errorCode' => 'INVALID_TOKEN',
                 'timestamp' => now()->toISOString(),
                 'path' => $request->path(),
                 'traceId' => uniqid()
             ], 401);
         }
 
-        // Vérifier l'expiration
-        if (now()->timestamp > session('auth_expires')) {
-            // Nettoyer la session
-            session()->forget(['auth_user_id', 'auth_user_type', 'auth_token', 'auth_expires']);
+        // Révoquer l'ancien token d'accès
+        $user->token()->revoke();
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Session expirée',
-                'errorCode' => 'SESSION_EXPIRED',
-                'timestamp' => now()->toISOString(),
-                'path' => $request->path(),
-                'traceId' => uniqid()
-            ], 401);
-        }
+        // Créer un nouveau token d'accès
+        $newAccessToken = $user->createToken('API Access Token')->accessToken;
 
-        // Générer un nouveau token de session
-        $userId = session('auth_user_id');
-        $userType = session('auth_user_type');
-        $newSessionToken = hash('sha256', $userId . $userType . now()->timestamp . uniqid());
-
-        // Mettre à jour la session
-        session([
-            'auth_token' => $newSessionToken,
-            'auth_expires' => now()->addMinutes(60)->timestamp,
-        ]);
+        // Créer un nouveau refresh token
+        $newRefreshToken = $user->createToken('API Refresh Token')->accessToken;
 
         // Préparer la réponse
         $response = response()->json([
             'success' => true,
-            'message' => 'Session rafraîchie avec succès',
+            'message' => 'Token rafraîchi avec succès',
+            'data' => [
+                'access_token' => $newAccessToken,
+                'token_type' => 'Bearer',
+            ],
             'timestamp' => now()->toISOString(),
             'path' => $request->path(),
             'traceId' => uniqid()
         ]);
 
-        // Mettre à jour le cookie
-        $response->cookie('session_token', $newSessionToken, 60, '/', null, false, true);
+        // Mettre à jour les cookies
+        $response->cookie('access_token', $newAccessToken, 60, '/', null, false, true); // 60 minutes
+        $response->cookie('refresh_token', $newRefreshToken, 60 * 24 * 7, '/', null, false, true); // 7 jours
 
         return $response;
     }
@@ -235,11 +216,13 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        // Nettoyer la session
-        session()->forget(['auth_user_id', 'auth_user_type', 'auth_token', 'auth_expires']);
+        // Vérifier l'utilisateur authentifié
+        $user = Auth::guard('api')->user();
 
-        // Déconnecter l'utilisateur
-        Auth::logout();
+        if ($user) {
+            // Révoquer tous les tokens de l'utilisateur
+            $user->tokens()->delete();
+        }
 
         // Préparer la réponse
         $response = response()->json([
@@ -250,8 +233,9 @@ class AuthController extends Controller
             'traceId' => uniqid()
         ]);
 
-        // Supprimer le cookie de session
-        $response->cookie('session_token', '', -1, '/', null, false, true);
+        // Supprimer les cookies
+        $response->cookie('access_token', '', -1, '/', null, false, true);
+        $response->cookie('refresh_token', '', -1, '/', null, false, true);
 
         return $response;
     }
