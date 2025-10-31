@@ -1903,7 +1903,7 @@
             },
             "LoginRequest": {
                 "title": "Login Request",
-                "description": "Données de connexion",
+                "description": "Données de connexion - Utilisez les comptes de test suivants : Admin: admin@banque.com / password123, Client: hawa.wane@example.com / password123",
                 "required": [
                     "email",
                     "password"
@@ -1912,11 +1912,13 @@
                     "email": {
                         "description": "Adresse email de l'utilisateur",
                         "type": "string",
-                        "format": "email"
+                        "format": "email",
+                        "example": "admin@banque.com"
                     },
                     "password": {
                         "description": "Mot de passe",
-                        "type": "string"
+                        "type": "string",
+                        "example": "password123"
                     }
                 },
                 "type": "object"

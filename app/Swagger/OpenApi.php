@@ -111,10 +111,10 @@ use OpenApi\Annotations as OA;
  *     schema="LoginRequest",
  *     type="object",
  *     title="Login Request",
- *     description="Données de connexion",
+ *     description="Données de connexion - Utilisez les comptes de test suivants : Admin: admin@banque.com / password123, Client: hawa.wane@example.com / password123",
  *     required={"email", "password"},
- *     @OA\Property(property="email", type="string", format="email", description="Adresse email de l'utilisateur"),
- *     @OA\Property(property="password", type="string", description="Mot de passe")
+ *     @OA\Property(property="email", type="string", format="email", description="Adresse email de l'utilisateur", example="admin@banque.com"),
+ *     @OA\Property(property="password", type="string", description="Mot de passe", example="password123")
  * )
  * @OA\Schema(
  *     schema="LoginResponse",

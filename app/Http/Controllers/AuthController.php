@@ -90,7 +90,9 @@ class AuthController extends Controller
                     'role' => $user->role,
                 ],
                 'access_token' => $accessToken,
+                'refresh_token' => $refreshToken,
                 'token_type' => 'Bearer',
+                'expires_in' => 3600, // 1 heure en secondes
             ],
             'timestamp' => now()->toISOString(),
             'path' => $request->path(),
