@@ -43,7 +43,7 @@ return [
 
         'api' => [
             'driver' => 'passport',
-            'provider' => 'multi_user',
+            'provider' => 'multi_table',
             'hash' => false,
         ],
     ],
@@ -81,9 +81,8 @@ return [
             'model' => App\Models\Client::class,
         ],
 
-        'multi_user' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+        'multi_table' => [
+            'driver' => 'multi_table',
         ],
 
         // 'users' => [

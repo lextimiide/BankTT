@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('admins', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('nom');
             $table->string('prenom');
             $table->string('email')->unique();
@@ -20,6 +20,11 @@ return new class extends Migration
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
+
+            // Indexes pour les performances
+            $table->index('nom');
+            $table->index('prenom');
+            $table->index('email');
         });
     }
 
