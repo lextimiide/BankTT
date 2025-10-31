@@ -31,8 +31,9 @@ class UnarchiveExpiredComptes implements ShouldQueue
     {
         Log::info('Démarrage du job de désarchivage automatique des comptes expirés');
 
-        // Trouver tous les comptes archivés dont la date de fin de blocage est dépassée
+        // Trouver tous les comptes épargne archivés dont la date de fin de blocage est dépassée
         $comptesToUnarchive = Compte::where('statut', 'archive')
+            ->where('type', 'epargne')
             ->whereNotNull('date_fin_blocage')
             ->where('date_fin_blocage', '<=', now())
             ->whereNotNull('archived_at')

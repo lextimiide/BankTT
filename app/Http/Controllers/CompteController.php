@@ -327,6 +327,96 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
+     *     path="/comptes/numero/{numero}",
+     *     summary="Récupérer un compte par numéro",
+     *     description="Permet de récupérer les détails d'un compte bancaire en utilisant son numéro de compte. Accessible aux admins et aux propriétaires du compte.",
+     *     operationId="getCompteByNumero",
+     *     tags={"Comptes"},
+     *     @OA\Server(
+     *         url="https://bankt-1.onrender.com/api/v1",
+     *         description="Serveur de production Render"
+     *     ),
+     *     @OA\Server(
+     *         url="http://localhost:8000/api/v1",
+     *         description="Serveur local de développement"
+     *     ),
+     *     @OA\Parameter(
+     *         name="numero",
+     *         in="path",
+     *         description="Numéro du compte à récupérer",
+     *         required=true,
+     *         @OA\Schema(type="string", example="CB241234567890")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte récupéré avec succès",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Compte"),
+     *             @OA\Property(property="timestamp", type="string", format="date-time"),
+     *             @OA\Property(property="path", type="string"),
+     *             @OA\Property(property="traceId", type="string")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Accès refusé",
+     *         @OA\JsonContent(ref="#/components/schemas/Error")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(ref="#/components/schemas/Error")
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Erreur interne du serveur",
+     *         @OA\JsonContent(ref="#/components/schemas/Error")
+     *     )
+     * )
+     */
+    public function showByNumero(string $numero)
+    {
+        try {
+            // Récupérer l'utilisateur authentifié
+            $user = request()->auth_user;
+
+            // Récupérer le compte par numéro
+            $compte = $this->compteService->getCompteByNumero($numero);
+
+            // Vérifier les permissions d'accès
+            if ($user) {
+                $this->checkAccountAccessPermission($compte, $user);
+            }
+
+            return $this->successResponse(
+                new CompteResource($compte->load('client')),
+                'Compte récupéré avec succès'
+            );
+        } catch (ModelNotFoundException $e) {
+            return $this->errorResponse(
+                'Le compte avec le numéro spécifié n\'existe pas',
+                404,
+                [
+                    'code' => 'COMPTE_NOT_FOUND',
+                    'details' => ['numero' => $numero]
+                ]
+            );
+        } catch (ApiException $e) {
+            return $this->errorResponse($e->getMessage(), $e->getCode() ?: 403);
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de la récupération du compte par numéro', [
+                'numero' => $numero,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse('Erreur interne du serveur', 500);
+        }
+    }
+
+    /**
+     * @OA\Get(
      *     path="/comptes/{compteId}",
      *     summary="Récupérer un compte spécifique",
      *     description="Permet de récupérer les détails d'un compte spécifique par son ID. La stratégie de recherche vérifie d'abord la base locale pour les comptes chèque ou épargne actifs, puis la base serverless si nécessaire.",

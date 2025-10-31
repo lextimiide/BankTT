@@ -421,6 +421,119 @@
                 ]
             }
         },
+        "/clients/recherche": {
+            "get": {
+                "tags": [
+                    "Clients"
+                ],
+                "summary": "Rechercher un client par téléphone ou NCI",
+                "description": "Permet de rechercher un client en utilisant son numéro de téléphone ou son numéro de carte d'identité nationale. Accessible uniquement aux administrateurs.",
+                "operationId": "searchClient",
+                "parameters": [
+                    {
+                        "name": "telephone",
+                        "in": "query",
+                        "description": "Numéro de téléphone du client",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "771234567"
+                        }
+                    },
+                    {
+                        "name": "nci",
+                        "in": "query",
+                        "description": "Numéro de carte d'identité nationale",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "1234567890123"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Client trouvé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Client"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "traceId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Paramètres de recherche invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès refusé - Réservé aux administrateurs",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Client non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                },
+                "servers": [
+                    {
+                        "url": "https://bankt-1.onrender.com/api/v1",
+                        "description": "Serveur de production Render"
+                    },
+                    {
+                        "url": "http://localhost:8000/api/v1",
+                        "description": "Serveur local de développement"
+                    }
+                ]
+            }
+        },
         "/comptes": {
             "get": {
                 "tags": [
@@ -842,6 +955,99 @@
                     },
                     "422": {
                         "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur interne du serveur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                },
+                "servers": [
+                    {
+                        "url": "https://bankt-1.onrender.com/api/v1",
+                        "description": "Serveur de production Render"
+                    },
+                    {
+                        "url": "http://localhost:8000/api/v1",
+                        "description": "Serveur local de développement"
+                    }
+                ]
+            }
+        },
+        "/comptes/numero/{numero}": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Récupérer un compte par numéro",
+                "description": "Permet de récupérer les détails d'un compte bancaire en utilisant son numéro de compte. Accessible aux admins et aux propriétaires du compte.",
+                "operationId": "getCompteByNumero",
+                "parameters": [
+                    {
+                        "name": "numero",
+                        "in": "path",
+                        "description": "Numéro du compte à récupérer",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "CB241234567890"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Compte récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Compte"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "path": {
+                                            "type": "string"
+                                        },
+                                        "traceId": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Accès refusé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé",
                         "content": {
                             "application/json": {
                                 "schema": {

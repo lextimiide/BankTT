@@ -16,7 +16,7 @@ class CompteResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
+        $data = [
             'id' => $this->id,
             'numeroCompte' => $this->numero_compte,
             'titulaire' => $this->whenLoaded('client', fn() => $this->client->titulaire),
@@ -36,5 +36,18 @@ class CompteResource extends JsonResource
                 'telephone' => $this->client->telephone,
             ]),
         ];
+
+        // Ajouter les informations de blocage pour les comptes épargne
+        if ($this->type === 'epargne') {
+            $data['blocage'] = [
+                'dateDebutBlocage' => $this->date_debut_blocage?->toISOString(),
+                'dateFinBlocage' => $this->date_fin_blocage?->toISOString(),
+                'motifBlocage' => $this->motif_blocage,
+                'motifDeblocage' => $this->motif_deblocage,
+                'dateDeblocage' => $this->date_deblocage?->toISOString(),
+            ];
+        }
+
+        return $data;
     }
 }

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\CompteController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClientController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +52,11 @@ Route::prefix('v1')->middleware(['api'])->group(function () {
                 ->name('comptes.index')
                 ->middleware('App\Http\Middleware\RatingMiddleware');
 
+            // Récupération par numéro de compte
+            Route::get('/numero/{numero}', [CompteController::class, 'showByNumero'])
+                ->name('comptes.show.by.numero')
+                ->middleware('App\Http\Middleware\RatingMiddleware');
+
             Route::get('/{id}', [CompteController::class, 'show'])
                 ->name('comptes.show')
                 ->middleware('App\Http\Middleware\RatingMiddleware');
@@ -72,6 +78,16 @@ Route::prefix('v1')->middleware(['api'])->group(function () {
             Route::post('/{id}/debloquer', [CompteController::class, 'unblock'])
                 ->name('comptes.unblock')
                 ->middleware(['role:admin', 'App\Http\Middleware\LoggingMiddleware']);
+        });
+    });
+
+    // Routes des clients (avec authentification et autorisation)
+    Route::prefix('clients')->middleware(['throttle:api'])->group(function () {
+        Route::middleware(['auth.api'])->group(function () {
+            // Recherche de client par téléphone ou NCI
+            Route::get('/recherche', [ClientController::class, 'search'])
+                ->name('clients.search')
+                ->middleware('App\Http\Middleware\RatingMiddleware');
         });
     });
 });

@@ -68,14 +68,20 @@ class CompteService
      */
     private function applyFilters($query, Request $request): void
     {
-        // Filtre par type
-        if ($request->has('type') && in_array($request->type, ['cheque', 'epargne', 'courant'])) {
+        // Filtre par type - uniquement épargne et chèque
+        if ($request->has('type') && in_array($request->type, ['cheque', 'epargne'])) {
             $query->where('type', $request->type);
+        } else {
+            // Par défaut, exclure les comptes courants
+            $query->whereIn('type', ['cheque', 'epargne']);
         }
 
-        // Filtre par statut
-        if ($request->has('statut') && in_array($request->statut, ['actif', 'inactif', 'bloque', 'ferme'])) {
+        // Filtre par statut - exclure automatiquement les comptes bloqués et fermés
+        if ($request->has('statut') && in_array($request->statut, ['actif', 'inactif'])) {
             $query->where('statut', $request->statut);
+        } else {
+            // Par défaut, exclure les comptes bloqués et fermés
+            $query->whereNotIn('statut', ['bloque', 'ferme']);
         }
 
         // Recherche par titulaire ou numéro de compte
@@ -128,10 +134,17 @@ class CompteService
 
     /**
      * Récupère un compte par son ID avec vérification des permissions
+     * Pour les comptes épargne archivés, récupère depuis la base Neon
      */
     public function getCompteById(string $id, $user = null): Compte
     {
         $compte = Compte::with('client')->find($id);
+
+        // Si le compte n'est pas trouvé dans la base principale et que c'est un compte épargne,
+        // essayer de le récupérer depuis la base Neon
+        if (!$compte) {
+            $compte = $this->getArchivedCompteFromNeon($id);
+        }
 
         if (!$compte) {
             throw new ApiException('Compte non trouvé', 404);
@@ -667,6 +680,58 @@ class CompteService
             'annees' => $dateDebut->copy()->addYears($duree),
             default => throw new \InvalidArgumentException("Unité de temps invalide: {$unite}")
         };
+    }
+
+    /**
+     * Récupère un compte épargne archivé depuis la base Neon
+     */
+    private function getArchivedCompteFromNeon(string $id): ?Compte
+    {
+        try {
+            // Utiliser la connexion Neon pour récupérer le compte archivé
+            $neonCompte = DB::connection('neon')
+                ->table('comptes')
+                ->where('id', $id)
+                ->where('type', 'epargne')
+                ->where('statut', 'archive')
+                ->whereNotNull('archived_at')
+                ->first();
+
+            if ($neonCompte) {
+                // Créer une instance Compte depuis les données Neon
+                $compte = new Compte();
+                $compte->fill((array) $neonCompte);
+
+                // Charger le client depuis Neon si nécessaire
+                if ($neonCompte->client_id) {
+                    $neonClient = DB::connection('neon')
+                        ->table('clients')
+                        ->where('id', $neonCompte->client_id)
+                        ->first();
+
+                    if ($neonClient) {
+                        $client = new \App\Models\Client();
+                        $client->fill((array) $neonClient);
+                        $compte->setRelation('client', $client);
+                    }
+                }
+
+                \Log::info('Compte archivé récupéré depuis la base Neon', [
+                    'compte_id' => $compte->id,
+                    'numero_compte' => $compte->numero_compte,
+                    'type' => $compte->type
+                ]);
+
+                return $compte;
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Erreur lors de la récupération du compte archivé depuis Neon', [
+                'compte_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return null;
     }
 
     /**
