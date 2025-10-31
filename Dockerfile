@@ -148,6 +148,6 @@ RUN chown -R www-data:www-data /var/www/html \
 # Exposer le port 8000
 EXPOSE 8000
 
-# Démarrer le serveur Laravel
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Exécuter les migrations et seeders au démarrage, puis démarrer le serveur
+CMD php artisan migrate --force && php artisan db:seed --force && php artisan passport:install --force && php artisan serve --host=0.0.0.0 --port=8000
 
