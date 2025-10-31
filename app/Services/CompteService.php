@@ -227,14 +227,14 @@ class CompteService
         return DB::transaction(function () use ($data) {
             try {
                 // Étape 1: Vérifier/créer le client
-                $client = $this->findOrCreateClient($data['client']);
+                $client = $this->findOrCreateClient($data);
 
                 // Étape 2: Créer le compte
                 $compte = Compte::create([
-                    'numero_compte' => $this->generateNumeroCompte(),
-                    'type' => $data['type'],
-                    'solde_initial' => $data['soldeInitial'],
-                    'devise' => $data['devise'],
+                    'numero_compte' => $data['numero_compte'] ?? $this->generateNumeroCompte(),
+                    'type' => $data['type_compte'],
+                    'solde_initial' => $data['solde'],
+                    'devise' => 'FCFA', // Devise par défaut
                     'statut' => 'actif',
                     'client_id' => $client->id,
                 ]);
@@ -245,8 +245,8 @@ class CompteService
                     'numero_compte' => $compte->numero_compte,
                     'client_id' => $client->id,
                     'client_email' => $client->email,
-                    'montant_initial' => $data['soldeInitial'],
-                    'devise' => $data['devise']
+                    'montant_initial' => $data['solde'],
+                    'type_compte' => $data['type_compte']
                 ]);
 
                 return $compte->load('client');
@@ -272,13 +272,13 @@ class CompteService
      *
      * @throws ApiException
      */
-    private function findOrCreateClient(array $clientData): Client
+    private function findOrCreateClient(array $data): Client
     {
-        // Étape 1: Si un ID de client est fourni, vérifier qu'il existe
-        if (isset($clientData['id']) && !empty($clientData['id'])) {
-            $client = Client::find($clientData['id']);
+        // Étape 1: Si un client_id est fourni, vérifier qu'il existe
+        if (isset($data['client_id']) && !empty($data['client_id'])) {
+            $client = Client::find($data['client_id']);
             if (!$client) {
-                throw new ApiException('Client avec ID ' . $clientData['id'] . ' non trouvé', 404);
+                throw new ApiException('Client avec ID ' . $data['client_id'] . ' non trouvé', 404);
             }
 
             \Log::info('Client existant trouvé par ID', [
@@ -289,28 +289,36 @@ class CompteService
             return $client;
         }
 
-        // Étape 2: Chercher un client existant par email ou téléphone
-        $existingClient = Client::where('email', $clientData['email'])
-            ->orWhere('telephone', $clientData['telephone'])
-            ->first();
+        // Étape 2: Si des données client sont fournies, créer ou trouver le client
+        if (isset($data['client']) && is_array($data['client'])) {
+            $clientData = $data['client'];
 
-        if ($existingClient) {
-            \Log::info('Client existant trouvé par email/téléphone', [
-                'client_id' => $existingClient->id,
-                'client_email' => $existingClient->email,
-                'client_telephone' => $existingClient->telephone
+            // Chercher un client existant par email ou téléphone
+            $existingClient = Client::where('email', $clientData['email'])
+                ->orWhere('telephone', $clientData['telephone'])
+                ->first();
+
+            if ($existingClient) {
+                \Log::info('Client existant trouvé par email/téléphone', [
+                    'client_id' => $existingClient->id,
+                    'client_email' => $existingClient->email,
+                    'client_telephone' => $existingClient->telephone
+                ]);
+
+                return $existingClient;
+            }
+
+            // Créer un nouveau client
+            \Log::info('Création d\'un nouveau client', [
+                'email' => $clientData['email'],
+                'telephone' => $clientData['telephone']
             ]);
 
-            return $existingClient;
+            return $this->createNewClient($clientData);
         }
 
-        // Étape 3: Créer un nouveau client
-        \Log::info('Création d\'un nouveau client', [
-            'email' => $clientData['email'],
-            'telephone' => $clientData['telephone']
-        ]);
-
-        return $this->createNewClient($clientData);
+        // Étape 3: Aucun client fourni - erreur
+        throw new ApiException('Informations client requises pour créer un compte', 400);
     }
 
     /**
