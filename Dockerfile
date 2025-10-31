@@ -43,9 +43,13 @@ RUN cp .env.example .env || true
 # Generate application key
 RUN php artisan key:generate
 
-# Run database migrations and seed production data
+# Run database migrations and seeders
 RUN php artisan migrate --force
-RUN php artisan app:seed-production-data --force
+RUN php artisan db:seed --force
+
+# Install Passport clients for API authentication
+RUN php artisan passport:client --personal --name="API Personal Access Client" --no-interaction
+RUN php artisan passport:client --password --name="API Password Grant Client" --no-interaction
 
 # Generate Swagger documentation
 RUN php artisan l5-swagger:generate

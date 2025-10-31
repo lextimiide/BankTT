@@ -22,6 +22,9 @@ class CompteService
     {
         $query = Compte::with('client');
 
+        // Appliquer les permissions selon le rôle de l'utilisateur
+        $this->applyRoleBasedFilters($query, $request);
+
         // Appliquer les filtres
         $this->applyFilters($query, $request);
 
@@ -33,6 +36,31 @@ class CompteService
         $perPage = min($perPage, 100); // Limite maximale
 
         return $query->paginate($perPage);
+    }
+
+    /**
+     * Applique les filtres basés sur les rôles utilisateur
+     */
+    private function applyRoleBasedFilters($query, Request $request): void
+    {
+        $user = $request->auth_user; // Récupéré depuis le middleware
+
+        if (!$user) {
+            // Si pas d'utilisateur authentifié, ne rien retourner
+            $query->whereRaw('1 = 0');
+            return;
+        }
+
+        // Admin peut voir tous les comptes
+        if ($user instanceof \App\Models\Admin) {
+            // Pas de restriction pour l'admin
+            return;
+        }
+
+        // Client ne peut voir que ses propres comptes
+        if ($user instanceof \App\Models\Client) {
+            $query->where('client_id', $user->id);
+        }
     }
 
     /**
@@ -99,14 +127,19 @@ class CompteService
     }
 
     /**
-     * Récupère un compte par son ID
+     * Récupère un compte par son ID avec vérification des permissions
      */
-    public function getCompteById(string $id): Compte
+    public function getCompteById(string $id, $user = null): Compte
     {
         $compte = Compte::with('client')->find($id);
 
         if (!$compte) {
             throw new ApiException('Compte non trouvé', 404);
+        }
+
+        // Vérifier les permissions
+        if ($user) {
+            $this->checkAccountAccessPermission($compte, $user);
         }
 
         return $compte;
@@ -134,6 +167,28 @@ class CompteService
         return Compte::client($telephone)
             ->with('client')
             ->get();
+    }
+
+    /**
+     * Vérifie les permissions d'accès à un compte
+     */
+    private function checkAccountAccessPermission(Compte $compte, $user): void
+    {
+        // Admin peut accéder à tous les comptes
+        if ($user instanceof \App\Models\Admin) {
+            return;
+        }
+
+        // Client ne peut accéder qu'à ses propres comptes
+        if ($user instanceof \App\Models\Client) {
+            if ($compte->client_id !== $user->id) {
+                throw new ApiException('Accès refusé. Vous ne pouvez accéder qu\'à vos propres comptes.', 403);
+            }
+            return;
+        }
+
+        // Utilisateur inconnu
+        throw new ApiException('Type d\'utilisateur non autorisé.', 403);
     }
 
     /**

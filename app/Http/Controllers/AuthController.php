@@ -47,13 +47,11 @@ class AuthController extends Controller
         ]);
 
         $user = null;
-        $guard = null;
 
         // Essayer d'abord avec Admin
         $admin = Admin::where('email', $request->email)->first();
         if ($admin && Hash::check($request->password, $admin->password)) {
             $user = $admin;
-            $guard = 'admins';
         }
 
         // Essayer avec Client si pas trouvé en tant qu'Admin
@@ -61,7 +59,6 @@ class AuthController extends Controller
             $client = Client::where('email', $request->email)->first();
             if ($client && Hash::check($request->password, $client->password)) {
                 $user = $client;
-                $guard = 'clients';
             }
         }
 
@@ -71,18 +68,26 @@ class AuthController extends Controller
             ]);
         }
 
-        // Créer le token d'accès
-        $token = $user->createToken('API Token')->accessToken;
+        // Authentifier l'utilisateur manuellement
+        Auth::login($user);
 
-        // Créer le refresh token
-        $refreshToken = $user->createToken('Refresh Token')->accessToken;
+        // Générer un token de session simple
+        $sessionToken = hash('sha256', $user->id . $user->email . now()->timestamp . uniqid());
+
+        // Stocker les informations en session
+        session([
+            'auth_user_id' => $user->id,
+            'auth_user_type' => $user instanceof Admin ? 'admin' : 'client',
+            'auth_token' => $sessionToken,
+            'auth_expires' => now()->addMinutes(60)->timestamp, // 1 heure
+        ]);
 
         // Préparer la réponse
         $response = response()->json([
             'success' => true,
             'message' => 'Connexion réussie',
             'data' => [
-                'user' => $user->role === 'admin' ? [
+                'user' => $user instanceof Admin ? [
                     'id' => $user->id,
                     'nom' => $user->nom,
                     'prenom' => $user->prenom,
@@ -94,16 +99,14 @@ class AuthController extends Controller
                     'email' => $user->email,
                     'role' => $user->role,
                 ],
-                'token_type' => 'Bearer',
             ],
             'timestamp' => now()->toISOString(),
             'path' => $request->path(),
             'traceId' => uniqid()
         ]);
 
-        // Stocker les tokens dans les cookies
-        $response->cookie('access_token', $token, 60, '/', null, false, true); // 60 minutes
-        $response->cookie('refresh_token', $refreshToken, 60 * 24 * 7, '/', null, false, true); // 7 jours
+        // Stocker le token de session dans les cookies
+        $response->cookie('session_token', $sessionToken, 60, '/', null, false, true); // 60 minutes
 
         return $response;
     }
@@ -144,36 +147,59 @@ class AuthController extends Controller
      */
     public function refresh(Request $request)
     {
-        $user = Auth::guard('api')->user();
+        // Vérifier le token de session
+        $sessionToken = $request->cookie('session_token');
 
-        if (!$user) {
+        if (!$sessionToken || $sessionToken !== session('auth_token')) {
             return response()->json([
                 'success' => false,
-                'message' => 'Token invalide ou expiré',
-                'errorCode' => 'INVALID_TOKEN',
+                'message' => 'Session invalide ou expirée',
+                'errorCode' => 'INVALID_SESSION',
                 'timestamp' => now()->toISOString(),
                 'path' => $request->path(),
                 'traceId' => uniqid()
             ], 401);
         }
 
-        // Révoquer l'ancien token
-        $user->token()->revoke();
+        // Vérifier l'expiration
+        if (now()->timestamp > session('auth_expires')) {
+            // Nettoyer la session
+            session()->forget(['auth_user_id', 'auth_user_type', 'auth_token', 'auth_expires']);
 
-        // Créer un nouveau token
-        $newToken = $user->createToken('API Token')->accessToken;
+            return response()->json([
+                'success' => false,
+                'message' => 'Session expirée',
+                'errorCode' => 'SESSION_EXPIRED',
+                'timestamp' => now()->toISOString(),
+                'path' => $request->path(),
+                'traceId' => uniqid()
+            ], 401);
+        }
 
-        return response()->json([
+        // Générer un nouveau token de session
+        $userId = session('auth_user_id');
+        $userType = session('auth_user_type');
+        $newSessionToken = hash('sha256', $userId . $userType . now()->timestamp . uniqid());
+
+        // Mettre à jour la session
+        session([
+            'auth_token' => $newSessionToken,
+            'auth_expires' => now()->addMinutes(60)->timestamp,
+        ]);
+
+        // Préparer la réponse
+        $response = response()->json([
             'success' => true,
-            'message' => 'Token rafraîchi avec succès',
-            'data' => [
-                'access_token' => $newToken,
-                'token_type' => 'Bearer',
-            ],
+            'message' => 'Session rafraîchie avec succès',
             'timestamp' => now()->toISOString(),
             'path' => $request->path(),
             'traceId' => uniqid()
         ]);
+
+        // Mettre à jour le cookie
+        $response->cookie('session_token', $newSessionToken, 60, '/', null, false, true);
+
+        return $response;
     }
 
     /**
@@ -209,12 +235,11 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $user = Auth::guard('api')->user();
+        // Nettoyer la session
+        session()->forget(['auth_user_id', 'auth_user_type', 'auth_token', 'auth_expires']);
 
-        if ($user) {
-            // Révoquer tous les tokens de l'utilisateur
-            $user->tokens()->delete();
-        }
+        // Déconnecter l'utilisateur
+        Auth::logout();
 
         // Préparer la réponse
         $response = response()->json([
@@ -225,9 +250,8 @@ class AuthController extends Controller
             'traceId' => uniqid()
         ]);
 
-        // Supprimer les cookies
-        $response->cookie('access_token', '', -1, '/', null, false, true);
-        $response->cookie('refresh_token', '', -1, '/', null, false, true);
+        // Supprimer le cookie de session
+        $response->cookie('session_token', '', -1, '/', null, false, true);
 
         return $response;
     }

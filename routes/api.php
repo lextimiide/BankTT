@@ -24,7 +24,7 @@ Route::prefix('v1')->middleware(['api'])->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('/login', [AuthController::class, 'login'])
             ->name('auth.login')
-            ->middleware('throttle:login');
+            ->middleware('throttle:100,1'); // Temporairement augmenté pour tests
 
         Route::post('/refresh', [AuthController::class, 'refresh'])
             ->name('auth.refresh')

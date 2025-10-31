@@ -24,6 +24,28 @@ class CompteController extends Controller
     ) {}
 
     /**
+     * Vérifie les permissions d'accès à un compte
+     */
+    private function checkAccountAccessPermission(Compte $compte, $user): void
+    {
+        // Admin peut accéder à tous les comptes
+        if ($user instanceof \App\Models\Admin) {
+            return;
+        }
+
+        // Client ne peut accéder qu'à ses propres comptes
+        if ($user instanceof \App\Models\Client) {
+            if ($compte->client_id !== $user->id) {
+                throw new ApiException('Accès refusé. Vous ne pouvez accéder qu\'à vos propres comptes.', 403);
+            }
+            return;
+        }
+
+        // Utilisateur inconnu
+        throw new ApiException('Type d\'utilisateur non autorisé.', 403);
+    }
+
+    /**
      * @OA\Get(
      *     path="/comptes",
      *     summary="Lister tous les comptes",
@@ -335,6 +357,12 @@ class CompteController extends Controller
     public function show(Compte $compte)
     {
         try {
+            // Vérifier les permissions d'accès au compte
+            $user = request()->auth_user;
+            if ($user) {
+                $this->checkAccountAccessPermission($compte, $user);
+            }
+
             // Route Model Binding automatically loads the compte with client relationship
             return $this->successResponse(
                 new CompteResource($compte->load('client')),
@@ -349,6 +377,8 @@ class CompteController extends Controller
                     'details' => ['compteId' => $compte->id ?? request('compteId')]
                 ]
             );
+        } catch (ApiException $e) {
+            return $this->errorResponse($e->getMessage(), $e->getCode() ?: 403);
         } catch (\Exception $e) {
             \Log::error('Erreur lors de la récupération du compte', [
                 'compte_id' => $compte->id ?? request('compteId'),
@@ -522,6 +552,12 @@ class CompteController extends Controller
     public function block(\App\Http\Requests\BlockCompteRequest $request, string $id)
     {
         try {
+            // Vérifier que seul un admin peut bloquer un compte
+            $user = request()->auth_user;
+            if (!$user instanceof \App\Models\Admin) {
+                return $this->errorResponse('Accès refusé. Seuls les administrateurs peuvent bloquer des comptes.', 403);
+            }
+
             $compte = $this->compteService->blockCompte($id, $request->validated());
             return $this->successResponse(
                 new CompteResource($compte),

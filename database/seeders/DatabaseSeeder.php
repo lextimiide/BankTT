@@ -12,13 +12,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Seed des admins (nécessaires pour l'authentification)
+        $this->call([
+            AdminSeeder::class,
+        ]);
+
         // Seed des clients de test
         $this->call([
             ClientSeeder::class,
             CompteSeeder::class,
         ]);
 
-        // Note: Les utilisateurs ne sont pas seedés car le modèle User n'existe pas dans ce projet bancaire
-        // Seuls les clients et comptes sont nécessaires pour les tests
+        // Note: Les utilisateurs classiques ne sont pas seedés car ce projet bancaire utilise
+        // uniquement les modèles Admin et Client pour l'authentification
     }
 }
