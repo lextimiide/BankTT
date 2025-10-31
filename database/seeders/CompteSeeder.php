@@ -89,9 +89,17 @@ class CompteSeeder extends Seeder
                     continue;
                 }
 
+                // Créer le compte avec seulement les colonnes valides
                 $compte = Compte::firstOrCreate(
                     ['numero_compte' => $compteData['numero_compte']],
-                    array_merge($compteData, ['client_id' => $client->id])
+                    [
+                        'numero_compte' => $compteData['numero_compte'],
+                        'type' => $compteData['type'],
+                        'solde_initial' => $compteData['solde_initial'],
+                        'devise' => $compteData['devise'],
+                        'statut' => $compteData['statut'],
+                        'client_id' => $client->id,
+                    ]
                 );
 
                 if ($compte->wasRecentlyCreated) {
