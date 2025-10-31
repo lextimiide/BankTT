@@ -12,25 +12,35 @@ class AdminSeeder extends Seeder
 {
     /**
      * Run the database seeds.
+     * Compatible avec les environnements local et production.
+     * Utilise Faker en développement, données statiques en production.
      */
     public function run(): void
     {
-        // En environnement de production, créer seulement des admins par défaut
-        if (App::environment('production')) {
-            $this->createProductionAdmins();
-        } else {
-            // En développement/local, utiliser Faker pour créer des admins aléatoires
-            $this->createDevelopmentAdmins();
+        try {
+            // Vérifier l'environnement et créer les admins appropriés
+            if (App::environment('production')) {
+                $this->createProductionAdmins();
+            } else {
+                $this->createDevelopmentAdmins();
+            }
+
+            $totalAdmins = Admin::count();
+            $this->command->info("🎉 Seeding Admin terminé avec succès ! {$totalAdmins} admins présents en base.");
+
+        } catch (\Exception $e) {
+            $this->command->error("❌ Erreur lors du seeding des admins : {$e->getMessage()}");
+            throw $e;
         }
     }
 
     /**
      * Créer des admins pour l'environnement de production
-     * Utilise firstOrCreate pour éviter les doublons
+     * Utilise des données statiques pour éviter toute dépendance à Faker
      */
     private function createProductionAdmins(): void
     {
-        $this->command->info('🌍 Environnement de production détecté - Création d\'admins par défaut...');
+        $this->command->info('🌍 Environnement de production détecté - Création d\'admins statiques...');
 
         $defaultAdmins = [
             [
@@ -50,23 +60,30 @@ class AdminSeeder extends Seeder
         ];
 
         foreach ($defaultAdmins as $adminData) {
-            Admin::firstOrCreate(
-                ['email' => $adminData['email']], // Condition de recherche
-                $adminData // Données à créer si non trouvé
-            );
-            $this->command->info("✅ Admin créé/mis à jour : {$adminData['prenom']} {$adminData['nom']} ({$adminData['email']})");
-        }
+            try {
+                $admin = Admin::firstOrCreate(
+                    ['email' => $adminData['email']],
+                    $adminData
+                );
 
-        $this->command->info("🎉 " . Admin::count() . " admins présents en base de données.");
+                if ($admin->wasRecentlyCreated) {
+                    $this->command->info("✅ Admin créé : {$adminData['prenom']} {$adminData['nom']} ({$adminData['email']})");
+                } else {
+                    $this->command->info("ℹ️ Admin déjà existant : {$adminData['prenom']} {$adminData['nom']} ({$adminData['email']})");
+                }
+            } catch (\Exception $e) {
+                $this->command->error("❌ Erreur création admin {$adminData['email']} : {$e->getMessage()}");
+            }
+        }
     }
 
     /**
      * Créer des admins pour l'environnement de développement
-     * Utilise Faker pour générer des données aléatoires
+     * Utilise Faker si disponible, sinon données statiques
      */
     private function createDevelopmentAdmins(): void
     {
-        $this->command->info('🏠 Environnement de développement détecté - Création d\'admins avec Faker...');
+        $this->command->info('🏠 Environnement de développement détecté - Création d\'admins...');
 
         // Créer des admins spécifiques pour les tests (éviter les doublons)
         $testAdmins = [
@@ -87,14 +104,23 @@ class AdminSeeder extends Seeder
         ];
 
         foreach ($testAdmins as $adminData) {
-            Admin::firstOrCreate(
-                ['email' => $adminData['email']], // Condition de recherche
-                $adminData // Données à créer si non trouvé
-            );
-            $this->command->info("✅ Admin de test créé/mis à jour : {$adminData['prenom']} {$adminData['nom']} ({$adminData['email']})");
+            try {
+                $admin = Admin::firstOrCreate(
+                    ['email' => $adminData['email']],
+                    $adminData
+                );
+
+                if ($admin->wasRecentlyCreated) {
+                    $this->command->info("✅ Admin de test créé : {$adminData['prenom']} {$adminData['nom']} ({$adminData['email']})");
+                } else {
+                    $this->command->info("ℹ️ Admin de test déjà existant : {$adminData['prenom']} {$adminData['nom']} ({$adminData['email']})");
+                }
+            } catch (\Exception $e) {
+                $this->command->error("❌ Erreur création admin de test {$adminData['email']} : {$e->getMessage()}");
+            }
         }
 
-        // Créer des admins supplémentaires avec Faker (seulement s'il n'y en a pas assez)
+        // Créer des admins supplémentaires (seulement s'il n'y en a pas assez)
         $existingCount = Admin::count();
         $targetCount = 5; // Nombre total souhaité
 
@@ -102,37 +128,68 @@ class AdminSeeder extends Seeder
             $additionalAdminsCount = $targetCount - $existingCount;
             $this->command->info("🎲 Création de {$additionalAdminsCount} admins supplémentaires...");
 
-            if (App::environment('production')) {
-                // En production, créer des admins statiques
-                for ($i = 1; $i <= $additionalAdminsCount; $i++) {
-                    Admin::firstOrCreate(
-                        ['email' => "admin{$i}@banque.com"],
-                        [
-                            'nom' => "Admin{$i}",
-                            'prenom' => "Test{$i}",
-                            'email' => "admin{$i}@banque.com",
-                            'password' => Hash::make('password123'),
-                            'email_verified_at' => now(),
-                        ]
-                    );
-                    $this->command->info("✅ Admin créé : Test{$i} Admin{$i} (admin{$i}@banque.com)");
+            // Vérifier si Faker est disponible
+            if ($this->isFakerAvailable()) {
+                try {
+                    // Utiliser Faker en développement
+                    Admin::factory($additionalAdminsCount)->create();
+
+                    foreach (Admin::latest()->take($additionalAdminsCount)->get() as $admin) {
+                        $this->command->info("✅ Admin Faker créé : {$admin->prenom} {$admin->nom} ({$admin->email})");
+                    }
+                } catch (\Exception $e) {
+                    $this->command->warn("⚠️ Faker indisponible, création d'admins statiques : {$e->getMessage()}");
+                    $this->createStaticAdmins($additionalAdminsCount);
                 }
             } else {
-                // En développement, utiliser Faker
-                Admin::factory($additionalAdminsCount)->create();
-
-                foreach (Admin::latest()->take($additionalAdminsCount)->get() as $admin) {
-                    $this->command->info("✅ Admin Faker créé : {$admin->prenom} {$admin->nom} ({$admin->email})");
-                }
+                $this->command->info("ℹ️ Faker non disponible, création d'admins statiques...");
+                $this->createStaticAdmins($additionalAdminsCount);
             }
         } else {
-            $this->command->info("ℹ️  Nombre d'admins suffisant ({$existingCount}), pas de création supplémentaire.");
+            $this->command->info("ℹ️ Nombre d'admins suffisant ({$existingCount}), pas de création supplémentaire.");
         }
 
         $finalCount = Admin::count();
         $this->command->info("🎉 {$finalCount} admins présents en base de données.");
         $this->command->info('📝 Mot de passe par défaut pour tous les admins : password123');
-        $this->command->warn('⚠️  Attention : Ne pas utiliser ces comptes en production !');
+        $this->command->warn('⚠️ Attention : Ne pas utiliser ces comptes en production !');
+    }
+
+    /**
+     * Créer des admins statiques (sans Faker)
+     */
+    private function createStaticAdmins(int $count): void
+    {
+        for ($i = 1; $i <= $count; $i++) {
+            try {
+                $admin = Admin::firstOrCreate(
+                    ['email' => "admin{$i}@banque.com"],
+                    [
+                        'nom' => "Admin{$i}",
+                        'prenom' => "Test{$i}",
+                        'email' => "admin{$i}@banque.com",
+                        'password' => Hash::make('password123'),
+                        'email_verified_at' => now(),
+                    ]
+                );
+
+                if ($admin->wasRecentlyCreated) {
+                    $this->command->info("✅ Admin statique créé : Test{$i} Admin{$i} (admin{$i}@banque.com)");
+                } else {
+                    $this->command->info("ℹ️ Admin statique déjà existant : Test{$i} Admin{$i} (admin{$i}@banque.com)");
+                }
+            } catch (\Exception $e) {
+                $this->command->error("❌ Erreur création admin statique {$i} : {$e->getMessage()}");
+            }
+        }
+    }
+
+    /**
+     * Vérifier si Faker est disponible
+     */
+    private function isFakerAvailable(): bool
+    {
+        return class_exists('\Faker\Factory');
     }
 
     /**
