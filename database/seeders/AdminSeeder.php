@@ -165,6 +165,7 @@ class AdminSeeder extends Seeder
                 $admin = Admin::firstOrCreate(
                     ['email' => "admin{$i}@banque.com"],
                     [
+                        'id' => $i + 2,
                         'nom' => "Admin{$i}",
                         'prenom' => "Test{$i}",
                         'email' => "admin{$i}@banque.com",
