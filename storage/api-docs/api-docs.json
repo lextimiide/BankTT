@@ -2197,9 +2197,9 @@
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",
-                "description": "Authentification JWT - Utilisez le format: Bearer {token} ou les cookies d'authentification",
+                "scheme": "bearer",
                 "bearerFormat": "JWT",
-                "scheme": "bearer"
+                "description": "Enter your Bearer token in the format: Bearer {token}"
             },
             "cookieAuth": {
                 "type": "apiKey",
@@ -2221,6 +2221,11 @@
         {
             "name": "Authentification",
             "description": "Authentification et gestion des tokens"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
         }
     ]
 }
