@@ -13,9 +13,6 @@
         {
             "url": "https://banktt.onrender.com/api/v1",
             "description": "Serveur de production Render"
-        },
-        {
-            "url": "/api/v1"
         }
     ],
     "paths": {
@@ -2200,9 +2197,9 @@
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",
-                "scheme": "bearer",
+                "description": "Authentification JWT - Utilisez le format: Bearer {token} ou les cookies d'authentification",
                 "bearerFormat": "JWT",
-                "description": "Enter your Bearer token in the format: Bearer {token}"
+                "scheme": "bearer"
             },
             "cookieAuth": {
                 "type": "apiKey",
@@ -2224,11 +2221,6 @@
         {
             "name": "Authentification",
             "description": "Authentification et gestion des tokens"
-        }
-    ],
-    "security": [
-        {
-            "bearerAuth": []
         }
     ]
 }
