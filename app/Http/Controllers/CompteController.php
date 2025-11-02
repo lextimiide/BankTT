@@ -187,8 +187,7 @@ class CompteController extends Controller
       *     @OA\RequestBody(
       *         required=true,
       *         @OA\JsonContent(
-      *             required={"type","solde","devise"},
-      *             @OA\Property(property="numero_compte", type="string", example="TEST002", description="Numéro de compte optionnel (auto-généré si vide)"),
+      *             required={"type","solde","devise","client"},
       *             @OA\Property(property="type", type="string", enum={"cheque", "epargne", "courant"}, example="cheque"),
       *             @OA\Property(property="solde", type="number", format="decimal", minimum=10000, example=15000, description="Solde initial du compte"),
       *             @OA\Property(property="devise", type="string", enum={"FCFA", "EUR", "USD"}, example="FCFA"),

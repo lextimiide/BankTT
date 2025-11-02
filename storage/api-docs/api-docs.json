@@ -767,14 +767,10 @@
                                 "required": [
                                     "type",
                                     "solde",
-                                    "devise"
+                                    "devise",
+                                    "client"
                                 ],
                                 "properties": {
-                                    "numero_compte": {
-                                        "description": "Numéro de compte optionnel (auto-généré si vide)",
-                                        "type": "string",
-                                        "example": "TEST002"
-                                    },
                                     "type": {
                                         "type": "string",
                                         "enum": [
