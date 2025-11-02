@@ -26,21 +26,23 @@ class StoreCompteRequest extends FormRequest
         return [
             // Account fields
             'numero_compte' => 'nullable|string|unique:comptes,numero_compte',
-            'type_compte' => 'required|in:epargne,courant',
-            'solde' => 'required|numeric|min:0',
+            'type_compte' => 'required|in:cheque,epargne,courant',
+            'solde' => 'required|numeric|min:10000',
+            'devise' => 'required|in:FCFA,EUR,USD',
 
-            // Client fields - either existing client ID or new client details
+            // Client fields - optional, will be auto-generated if not provided
             'client_id' => 'nullable|uuid|exists:clients,id',
-            'client.titulaire' => 'required_without:client_id|string|min:2|max:255',
-            'client.email' => 'required_without:client_id|email|unique:clients,email',
+            'client' => 'nullable|array',
+            'client.titulaire' => 'required_with:client|string|min:2|max:255',
+            'client.email' => 'required_with:client|email|unique:clients,email',
             'client.telephone' => [
-                'required_without:client_id',
+                'required_with:client',
                 new \App\Rules\SenegalesePhone(),
                 'unique:clients,telephone'
             ],
-            'client.adresse' => 'required_without:client_id|string|min:5|max:500',
+            'client.adresse' => 'required_with:client|string|min:5|max:500',
             'client.nci' => [
-                'required_without:client_id',
+                'required_with:client',
                 new \App\Rules\SenegaleseNCI()
             ]
         ];
@@ -55,24 +57,27 @@ class StoreCompteRequest extends FormRequest
             'numero_compte.string' => 'Le numéro de compte doit être une chaîne de caractères.',
             'numero_compte.unique' => 'Ce numéro de compte est déjà utilisé.',
             'type_compte.required' => 'Le type de compte est obligatoire.',
-            'type_compte.in' => 'Le type de compte doit être : epargne ou courant.',
-            'solde.required' => 'Le solde est obligatoire.',
+            'type_compte.in' => 'Le type de compte doit être : cheque, epargne ou courant.',
+            'solde.required' => 'Le solde initial est obligatoire.',
             'solde.numeric' => 'Le solde doit être un nombre.',
-            'solde.min' => 'Le solde ne peut pas être négatif.',
+            'solde.min' => 'Le solde initial doit être d\'au moins 10 000 FCFA.',
+            'devise.required' => 'La devise est obligatoire.',
+            'devise.in' => 'La devise doit être : FCFA, EUR ou USD.',
             'client_id.uuid' => 'L\'ID du client doit être un UUID valide.',
             'client_id.exists' => 'Le client spécifié n\'existe pas.',
-            'client.titulaire.required_without' => 'Le nom du titulaire est obligatoire pour un nouveau client.',
+            'client.array' => 'Les informations client doivent être un objet.',
+            'client.titulaire.required_with' => 'Le nom du titulaire est obligatoire lorsque des informations client sont fournies.',
             'client.titulaire.min' => 'Le nom du titulaire doit contenir au moins 2 caractères.',
             'client.titulaire.max' => 'Le nom du titulaire ne peut pas dépasser 255 caractères.',
-            'client.email.required_without' => 'L\'email est obligatoire pour un nouveau client.',
+            'client.email.required_with' => 'L\'email est obligatoire lorsque des informations client sont fournies.',
             'client.email.email' => 'L\'email doit être une adresse email valide.',
             'client.email.unique' => 'Cet email est déjà utilisé.',
-            'client.telephone.required_without' => 'Le numéro de téléphone est obligatoire pour un nouveau client.',
+            'client.telephone.required_with' => 'Le numéro de téléphone est obligatoire lorsque des informations client sont fournies.',
             'client.telephone.unique' => 'Ce numéro de téléphone est déjà utilisé.',
-            'client.adresse.required_without' => 'L\'adresse est obligatoire pour un nouveau client.',
+            'client.adresse.required_with' => 'L\'adresse est obligatoire lorsque des informations client sont fournies.',
             'client.adresse.min' => 'L\'adresse doit contenir au moins 5 caractères.',
             'client.adresse.max' => 'L\'adresse ne peut pas dépasser 500 caractères.',
-            'client.nci.required_without' => 'Le numéro de carte d\'identité nationale est obligatoire pour un nouveau client.'
+            'client.nci.required_with' => 'Le numéro de carte d\'identité nationale est obligatoire lorsque des informations client sont fournies.'
         ];
     }
 
@@ -84,8 +89,10 @@ class StoreCompteRequest extends FormRequest
         return [
             'numero_compte' => 'numéro de compte',
             'type_compte' => 'type de compte',
-            'solde' => 'solde',
+            'solde' => 'solde initial',
+            'devise' => 'devise',
             'client_id' => 'ID du client',
+            'client' => 'informations client',
             'client.titulaire' => 'nom du titulaire',
             'client.email' => 'email',
             'client.telephone' => 'numéro de téléphone',

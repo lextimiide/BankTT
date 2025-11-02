@@ -757,7 +757,7 @@
                     "Comptes"
                 ],
                 "summary": "Créer un nouveau compte bancaire",
-                "description": "Crée un nouveau compte bancaire en vérifiant/créant le client si nécessaire",
+                "description": "Crée un nouveau compte bancaire. Lors de la création d'un compte on effectue les actions suivantes : On vérifie l'existence du client. Si le client n'existe pas on le crée automatiquement.",
                 "operationId": "createCompte",
                 "requestBody": {
                     "required": true,
@@ -766,9 +766,8 @@
                             "schema": {
                                 "required": [
                                     "type",
-                                    "soldeInitial",
-                                    "devise",
-                                    "client"
+                                    "solde",
+                                    "devise"
                                 ],
                                 "properties": {
                                     "numero_compte": {
@@ -785,7 +784,8 @@
                                         ],
                                         "example": "cheque"
                                     },
-                                    "soldeInitial": {
+                                    "solde": {
+                                        "description": "Solde initial du compte",
                                         "type": "number",
                                         "format": "decimal",
                                         "minimum": 10000,
@@ -800,58 +800,39 @@
                                         ],
                                         "example": "FCFA"
                                     },
+                                    "client_id": {
+                                        "description": "ID du client existant (optionnel)",
+                                        "type": "string",
+                                        "format": "uuid",
+                                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                                    },
                                     "client": {
-                                        "type": "object",
-                                        "oneOf": [
-                                            {
-                                                "required": [
-                                                    "id"
-                                                ],
-                                                "properties": {
-                                                    "id": {
-                                                        "description": "ID du client existant",
-                                                        "type": "string",
-                                                        "format": "uuid",
-                                                        "example": "550e8400-e29b-41d4-a716-446655440000"
-                                                    }
-                                                },
-                                                "type": "object"
+                                        "description": "Informations du client (optionnel - auto-généré si non fourni)",
+                                        "properties": {
+                                            "titulaire": {
+                                                "type": "string",
+                                                "example": "Client Auto-Généré"
                                             },
-                                            {
-                                                "required": [
-                                                    "titulaire",
-                                                    "email",
-                                                    "telephone",
-                                                    "adresse",
-                                                    "nci"
-                                                ],
-                                                "properties": {
-                                                    "titulaire": {
-                                                        "type": "string",
-                                                        "example": "Test User 2"
-                                                    },
-                                                    "email": {
-                                                        "type": "string",
-                                                        "format": "email",
-                                                        "example": "test2@example.com"
-                                                    },
-                                                    "telephone": {
-                                                        "type": "string",
-                                                        "example": "771234569"
-                                                    },
-                                                    "adresse": {
-                                                        "type": "string",
-                                                        "example": "Test Address 2"
-                                                    },
-                                                    "nci": {
-                                                        "description": "Numéro de carte d'identité nationale",
-                                                        "type": "string",
-                                                        "example": "1234567890124"
-                                                    }
-                                                },
-                                                "type": "object"
+                                            "email": {
+                                                "type": "string",
+                                                "format": "email",
+                                                "example": "auto.client.123456@banktt.local"
+                                            },
+                                            "telephone": {
+                                                "type": "string",
+                                                "example": "+221771234567"
+                                            },
+                                            "adresse": {
+                                                "type": "string",
+                                                "example": "Adresse auto-générée"
+                                            },
+                                            "nci": {
+                                                "description": "Numéro de carte d'identité nationale auto-généré",
+                                                "type": "string",
+                                                "example": "1985123456789"
                                             }
-                                        ]
+                                        },
+                                        "type": "object"
                                     }
                                 },
                                 "type": "object"

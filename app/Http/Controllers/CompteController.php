@@ -170,46 +170,38 @@ class CompteController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/comptes",
-     *     summary="Créer un nouveau compte bancaire",
-     *     description="Crée un nouveau compte bancaire en vérifiant/créant le client si nécessaire",
-     *     operationId="createCompte",
-     *     tags={"Comptes"},
-     *     @OA\Server(
-     *          url="https://banktt.onrender.com/api/v1",
-     *         description="Serveur de production Render"
-     *        
-     *     ),
-     *     @OA\Server(
-     *          url="http://localhost:8000/api/v1",
-     *         description="Serveur local de développement"
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"type","soldeInitial","devise","client"},
-     *             @OA\Property(property="numero_compte", type="string", example="TEST002", description="Numéro de compte optionnel (auto-généré si vide)"),
-     *             @OA\Property(property="type", type="string", enum={"cheque", "epargne", "courant"}, example="cheque"),
-     *             @OA\Property(property="soldeInitial", type="number", format="decimal", minimum=10000, example=15000),
-     *             @OA\Property(property="devise", type="string", enum={"FCFA", "EUR", "USD"}, example="FCFA"),
-     *             @OA\Property(property="client", type="object",
-     *                 oneOf={
-     *                     @OA\Schema(
-     *                         required={"id"},
-     *                         @OA\Property(property="id", type="string", format="uuid", description="ID du client existant", example="550e8400-e29b-41d4-a716-446655440000")
-     *                     ),
-     *                     @OA\Schema(
-     *                         required={"titulaire","email","telephone","adresse","nci"},
-     *                         @OA\Property(property="titulaire", type="string", example="Test User 2"),
-     *                         @OA\Property(property="email", type="string", format="email", example="test2@example.com"),
-     *                         @OA\Property(property="telephone", type="string", example="771234569"),
-     *                         @OA\Property(property="adresse", type="string", example="Test Address 2"),
-     *                         @OA\Property(property="nci", type="string", example="1234567890124", description="Numéro de carte d'identité nationale")
-     *                     )
-     *                 }
-     *             )
-     *         )
-     *     ),
+      *     path="/comptes",
+      *     summary="Créer un nouveau compte bancaire",
+      *     description="Crée un nouveau compte bancaire. Lors de la création d'un compte on effectue les actions suivantes : On vérifie l'existence du client. Si le client n'existe pas on le crée automatiquement.",
+      *     operationId="createCompte",
+      *     tags={"Comptes"},
+      *     @OA\Server(
+      *          url="https://banktt.onrender.com/api/v1",
+      *         description="Serveur de production Render"
+      *
+      *     ),
+      *     @OA\Server(
+      *          url="http://localhost:8000/api/v1",
+      *         description="Serveur local de développement"
+      *     ),
+      *     @OA\RequestBody(
+      *         required=true,
+      *         @OA\JsonContent(
+      *             required={"type","solde","devise"},
+      *             @OA\Property(property="numero_compte", type="string", example="TEST002", description="Numéro de compte optionnel (auto-généré si vide)"),
+      *             @OA\Property(property="type", type="string", enum={"cheque", "epargne", "courant"}, example="cheque"),
+      *             @OA\Property(property="solde", type="number", format="decimal", minimum=10000, example=15000, description="Solde initial du compte"),
+      *             @OA\Property(property="devise", type="string", enum={"FCFA", "EUR", "USD"}, example="FCFA"),
+      *             @OA\Property(property="client_id", type="string", format="uuid", description="ID du client existant (optionnel)", example="550e8400-e29b-41d4-a716-446655440000"),
+      *             @OA\Property(property="client", type="object", description="Informations du client (optionnel - auto-généré si non fourni)",
+      *                 @OA\Property(property="titulaire", type="string", example="Client Auto-Généré"),
+      *                 @OA\Property(property="email", type="string", format="email", example="auto.client.123456@banktt.local"),
+      *                 @OA\Property(property="telephone", type="string", example="+221771234567"),
+      *                 @OA\Property(property="adresse", type="string", example="Adresse auto-générée"),
+      *                 @OA\Property(property="nci", type="string", example="1985123456789", description="Numéro de carte d'identité nationale auto-généré")
+      *             )
+      *         )
+      *     ),
      *     @OA\Response(
      *         response=201,
      *         description="Compte créé avec succès",
