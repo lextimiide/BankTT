@@ -800,23 +800,17 @@
                                         ],
                                         "example": "FCFA"
                                     },
-                                    "client_id": {
-                                        "description": "ID du client existant (optionnel)",
-                                        "type": "string",
-                                        "format": "uuid",
-                                        "example": "550e8400-e29b-41d4-a716-446655440000"
-                                    },
                                     "client": {
-                                        "description": "Informations du client (optionnel - auto-généré si non fourni)",
+                                        "description": "Informations du client à créer",
                                         "properties": {
                                             "titulaire": {
                                                 "type": "string",
-                                                "example": "Client Auto-Généré"
+                                                "example": "Hawa BB Wane"
                                             },
                                             "email": {
                                                 "type": "string",
                                                 "format": "email",
-                                                "example": "auto.client.123456@banktt.local"
+                                                "example": "hawa.wane@example.com"
                                             },
                                             "telephone": {
                                                 "type": "string",
@@ -824,12 +818,12 @@
                                             },
                                             "adresse": {
                                                 "type": "string",
-                                                "example": "Adresse auto-générée"
+                                                "example": "Dakar, Sénégal"
                                             },
                                             "nci": {
-                                                "description": "Numéro de carte d'identité nationale auto-généré",
+                                                "description": "Numéro de carte d'identité nationale",
                                                 "type": "string",
-                                                "example": "1985123456789"
+                                                "example": "1234567890124"
                                             }
                                         },
                                         "type": "object"

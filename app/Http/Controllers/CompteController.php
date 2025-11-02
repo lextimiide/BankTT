@@ -192,13 +192,12 @@ class CompteController extends Controller
       *             @OA\Property(property="type", type="string", enum={"cheque", "epargne", "courant"}, example="cheque"),
       *             @OA\Property(property="solde", type="number", format="decimal", minimum=10000, example=15000, description="Solde initial du compte"),
       *             @OA\Property(property="devise", type="string", enum={"FCFA", "EUR", "USD"}, example="FCFA"),
-      *             @OA\Property(property="client_id", type="string", format="uuid", description="ID du client existant (optionnel)", example="550e8400-e29b-41d4-a716-446655440000"),
-      *             @OA\Property(property="client", type="object", description="Informations du client (optionnel - auto-généré si non fourni)",
-      *                 @OA\Property(property="titulaire", type="string", example="Client Auto-Généré"),
-      *                 @OA\Property(property="email", type="string", format="email", example="auto.client.123456@banktt.local"),
+      *             @OA\Property(property="client", type="object", description="Informations du client à créer",
+      *                 @OA\Property(property="titulaire", type="string", example="Hawa BB Wane"),
+      *                 @OA\Property(property="email", type="string", format="email", example="hawa.wane@example.com"),
       *                 @OA\Property(property="telephone", type="string", example="+221771234567"),
-      *                 @OA\Property(property="adresse", type="string", example="Adresse auto-générée"),
-      *                 @OA\Property(property="nci", type="string", example="1985123456789", description="Numéro de carte d'identité nationale auto-généré")
+      *                 @OA\Property(property="adresse", type="string", example="Dakar, Sénégal"),
+      *                 @OA\Property(property="nci", type="string", example="1234567890124", description="Numéro de carte d'identité nationale")
       *             )
       *         )
       *     ),
