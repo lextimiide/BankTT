@@ -765,13 +765,13 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "type",
+                                    "type_compte",
                                     "solde",
                                     "devise",
                                     "client"
                                 ],
                                 "properties": {
-                                    "type": {
+                                    "type_compte": {
                                         "type": "string",
                                         "enum": [
                                             "cheque",
@@ -806,11 +806,11 @@
                                             "email": {
                                                 "type": "string",
                                                 "format": "email",
-                                                "example": "hawa.wane@example.com"
+                                                "example": "a.diome4@isepdiamniadio.edu.sn"
                                             },
                                             "telephone": {
                                                 "type": "string",
-                                                "example": "+221771234567"
+                                                "example": "764138198"
                                             },
                                             "adresse": {
                                                 "type": "string",

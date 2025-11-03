@@ -184,22 +184,22 @@ class CompteController extends Controller
       *          url="http://localhost:8000/api/v1",
       *         description="Serveur local de développement"
       *     ),
-      *     @OA\RequestBody(
-      *         required=true,
-      *         @OA\JsonContent(
-      *             required={"type","solde","devise","client"},
-      *             @OA\Property(property="type", type="string", enum={"cheque", "epargne", "courant"}, example="cheque"),
-      *             @OA\Property(property="solde", type="number", format="decimal", minimum=10000, example=15000, description="Solde initial du compte"),
-      *             @OA\Property(property="devise", type="string", enum={"FCFA", "EUR", "USD"}, example="FCFA"),
-      *             @OA\Property(property="client", type="object", description="Informations du client à créer",
-      *                 @OA\Property(property="titulaire", type="string", example="Hawa BB Wane"),
-      *                 @OA\Property(property="email", type="string", format="email", example="hawa.wane@example.com"),
-      *                 @OA\Property(property="telephone", type="string", example="+221771234567"),
-      *                 @OA\Property(property="adresse", type="string", example="Dakar, Sénégal"),
-      *                 @OA\Property(property="nci", type="string", example="1234567890124", description="Numéro de carte d'identité nationale")
-      *             )
-      *         )
-      *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"type_compte","solde","devise","client"},
+     *             @OA\Property(property="type_compte", type="string", enum={"cheque", "epargne", "courant"}, example="cheque"),
+     *             @OA\Property(property="solde", type="number", format="decimal", minimum=10000, example=15000, description="Solde initial du compte"),
+     *             @OA\Property(property="devise", type="string", enum={"FCFA", "EUR", "USD"}, example="FCFA"),
+     *             @OA\Property(property="client", type="object", description="Informations du client à créer",
+     *                 @OA\Property(property="titulaire", type="string", example="Hawa BB Wane"),
+     *                 @OA\Property(property="email", type="string", format="email", example="a.diome4@isepdiamniadio.edu.sn"),
+     *                 @OA\Property(property="telephone", type="string", example="764138198"),
+     *                 @OA\Property(property="adresse", type="string", example="Dakar, Sénégal"),
+     *                 @OA\Property(property="nci", type="string", example="1234567890124", description="Numéro de carte d'identité nationale")
+     *             )
+     *         )
+     *     ),
      *     @OA\Response(
      *         response=201,
      *         description="Compte créé avec succès",
