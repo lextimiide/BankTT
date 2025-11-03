@@ -192,11 +192,11 @@ class CompteController extends Controller
      *             @OA\Property(property="solde", type="number", format="decimal", minimum=10000, example=15000, description="Solde initial du compte"),
      *             @OA\Property(property="devise", type="string", enum={"FCFA", "EUR", "USD"}, example="FCFA"),
      *             @OA\Property(property="client", type="object", description="Informations du client à créer",
-     *                 @OA\Property(property="titulaire", type="string", example="Hawa BB Wane"),
+     *                 @OA\Property(property="titulaire", type="string", example="lex"),
      *                 @OA\Property(property="email", type="string", format="email", example="a.diome4@isepdiamniadio.edu.sn"),
-     *                 @OA\Property(property="telephone", type="string", example="764138198"),
-     *                 @OA\Property(property="adresse", type="string", example="Dakar, Sénégal"),
-     *                 @OA\Property(property="nci", type="string", example="1234567890124", description="Numéro de carte d'identité nationale")
+     *                 @OA\Property(property="telephone", type="string", example="768232118"),
+     *                 @OA\Property(property="adresse", type="string", example="Test Address"),
+     *                 @OA\Property(property="nci", type="string", example="1234567190124", description="Numéro de carte d'identité nationale")
      *             )
      *         )
      *     ),
