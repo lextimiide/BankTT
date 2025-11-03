@@ -4,23 +4,25 @@ namespace App\Traits;
 
 use Illuminate\Http\JsonResponse;
 
+/**
+ * Trait pour standardiser les réponses API avec structure simplifiée
+ */
 trait ApiResponseTrait
 {
     /**
-     * Format de réponse standard pour les succès
+     * Structure unifiée de réponse API
      */
-    protected function successResponse(
+    private function formatResponse(
+        bool $success,
+        string $message,
         mixed $data = null,
-        string $message = 'Opération réussie',
-        int $statusCode = 200,
-        ?array $meta = null
-    ): JsonResponse {
+        ?array $meta = null,
+        ?string $errorCode = null,
+        ?array $errors = null
+    ): array {
         $response = [
-            'success' => true,
+            'success' => $success,
             'message' => $message,
-            'timestamp' => now()->toISOString(),
-            'path' => request()->path(),
-            'traceId' => uniqid(),
         ];
 
         if ($data !== null) {
@@ -31,124 +33,181 @@ trait ApiResponseTrait
             $response['meta'] = $meta;
         }
 
-        return response()->json($response, $statusCode);
-    }
-
-    /**
-     * Format de réponse standard pour les erreurs
-     */
-    protected function errorResponse(
-        string $message = 'Une erreur est survenue',
-        int $statusCode = 400,
-        ?array $errors = null,
-        ?string $errorCode = null
-    ): JsonResponse {
-        $response = [
-            'success' => false,
-            'message' => $message,
-            'timestamp' => now()->toISOString(),
-            'path' => request()->path(),
-            'traceId' => uniqid(),
-        ];
+        if ($errorCode !== null) {
+            $response['errorCode'] = $errorCode;
+        }
 
         if ($errors !== null) {
             $response['errors'] = $errors;
         }
 
-        if ($errorCode !== null) {
-            $response['errorCode'] = $errorCode;
-        }
-
-        return response()->json($response, $statusCode);
+        return $response;
     }
 
     /**
-     * Réponse paginée standard
+     * Réponse de succès simplifiée
      */
-    protected function paginatedResponse(
-        mixed $data,
-        string $message = 'Données récupérées avec succès'
-    ): JsonResponse {
-        $pagination = [
-            'currentPage' => $data->currentPage(),
-            'totalPages' => $data->lastPage(),
-            'totalItems' => $data->total(),
-            'itemsPerPage' => $data->perPage(),
-            'hasNext' => $data->hasMorePages(),
-            'hasPrevious' => $data->currentPage() > 1,
-        ];
-
-        $links = [
-            'self' => $data->url($data->currentPage()),
-            'first' => $data->url(1),
-            'last' => $data->url($data->lastPage()),
-        ];
-
-        if ($data->hasMorePages()) {
-            $links['next'] = $data->url($data->currentPage() + 1);
-        }
-
-        if ($data->currentPage() > 1) {
-            $links['previous'] = $data->url($data->currentPage() - 1);
-        }
-
-        return $this->successResponse(
-            data: $data->items(),
-            message: $message,
-            meta: [
-                'pagination' => $pagination,
-                'links' => $links,
-            ]
+    protected function success(mixed $data = null, string $message = 'Success'): JsonResponse
+    {
+        return response()->json(
+            $this->formatResponse(true, $message, $data),
+            200
         );
     }
 
     /**
-     * Réponse de ressource créée
+     * Réponse d'erreur simplifiée
      */
-    protected function createdResponse(
-        mixed $data,
-        string $message = 'Ressource créée avec succès'
+    protected function error(
+        string $message = 'Error',
+        int $statusCode = 400,
+        ?string $errorCode = null,
+        ?array $errors = null
     ): JsonResponse {
-        return $this->successResponse($data, $message, 201);
+        return response()->json(
+            $this->formatResponse(false, $message, null, null, $errorCode, $errors),
+            $statusCode
+        );
     }
 
     /**
-     * Réponse de ressource non trouvée
+     * Réponse paginée simplifiée
      */
+    protected function paginated(mixed $data, string $message = 'Data retrieved'): JsonResponse
+    {
+        $meta = [
+            'pagination' => [
+                'current_page' => $data->currentPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total(),
+                'last_page' => $data->lastPage(),
+                'from' => $data->firstItem(),
+                'to' => $data->lastItem(),
+            ],
+            'links' => [
+                'first' => $data->url(1),
+                'last' => $data->url($data->lastPage()),
+                'prev' => $data->previousPageUrl(),
+                'next' => $data->nextPageUrl(),
+            ],
+        ];
+
+        return response()->json(
+            $this->formatResponse(true, $message, $data->items(), $meta),
+            200
+        );
+    }
+
+    /**
+     * Réponse de création simplifiée
+     */
+    protected function created(mixed $data = null, string $message = 'Created'): JsonResponse
+    {
+        return response()->json(
+            $this->formatResponse(true, $message, $data),
+            201
+        );
+    }
+
+    /**
+     * Réponse de mise à jour simplifiée
+     */
+    protected function updated(mixed $data = null, string $message = 'Updated'): JsonResponse
+    {
+        return response()->json(
+            $this->formatResponse(true, $message, $data),
+            200
+        );
+    }
+
+    /**
+     * Réponse de suppression simplifiée
+     */
+    protected function deleted(string $message = 'Deleted'): JsonResponse
+    {
+        return response()->json(
+            $this->formatResponse(true, $message),
+            200
+        );
+    }
+
+    /**
+     * Erreurs communes simplifiées
+     */
+    protected function notFound(string $resource = 'Resource'): JsonResponse
+    {
+        return $this->error("$resource not found", 404, 'NOT_FOUND');
+    }
+
+    protected function unauthorized(string $message = 'Unauthorized'): JsonResponse
+    {
+        return $this->error($message, 401, 'UNAUTHORIZED');
+    }
+
+    protected function forbidden(string $message = 'Forbidden'): JsonResponse
+    {
+        return $this->error($message, 403, 'FORBIDDEN');
+    }
+
+    protected function validationError(array $errors, string $message = 'Validation failed'): JsonResponse
+    {
+        return $this->error($message, 422, 'VALIDATION_ERROR', $errors);
+    }
+
+    protected function serverError(string $message = 'Internal server error'): JsonResponse
+    {
+        return $this->error($message, 500, 'INTERNAL_ERROR');
+    }
+
+    // Méthodes d'aide pour les anciens noms (rétrocompatibilité)
+    protected function successResponse(mixed $data = null, string $message = 'Opération réussie', int $statusCode = 200, ?array $meta = null): JsonResponse
+    {
+        if ($meta) {
+            return response()->json(
+                $this->formatResponse(true, $message, $data, $meta),
+                $statusCode
+            );
+        }
+        return $this->success($data, $message)->setStatusCode($statusCode);
+    }
+
+    protected function errorResponse(string $message = 'Une erreur est survenue', int $statusCode = 400, ?array $errors = null, ?string $errorCode = null): JsonResponse
+    {
+        return $this->error($message, $statusCode, $errorCode, $errors);
+    }
+
+    protected function paginatedResponse(mixed $data, string $message = 'Données récupérées avec succès'): JsonResponse
+    {
+        return $this->paginated($data, $message);
+    }
+
+    protected function createdResponse(mixed $data, string $message = 'Ressource créée avec succès'): JsonResponse
+    {
+        return $this->created($data, $message);
+    }
+
     protected function notFoundResponse(string $resource = 'Ressource'): JsonResponse
     {
-        return $this->errorResponse("$resource introuvable", 404, null, 'RESOURCE_NOT_FOUND');
+        return $this->notFound($resource);
     }
 
-    /**
-     * Réponse de validation échouée
-     */
     protected function validationErrorResponse(array $errors): JsonResponse
     {
-        return $this->errorResponse('Erreur de validation', 422, $errors, 'VALIDATION_ERROR');
+        return $this->validationError($errors);
     }
 
-    /**
-     * Réponse d'erreur interne du serveur
-     */
     protected function serverErrorResponse(string $message = 'Erreur interne du serveur'): JsonResponse
     {
-        return $this->errorResponse($message, 500, null, 'INTERNAL_SERVER_ERROR');
+        return $this->serverError($message);
     }
 
-    /**
-     * Réponse d'accès non autorisé
-     */
     protected function unauthorizedResponse(string $message = 'Accès non autorisé'): JsonResponse
     {
-        return $this->errorResponse($message, 401, null, 'UNAUTHORIZED');
+        return $this->unauthorized($message);
     }
 
-    /**
-     * Réponse d'accès interdit
-     */
     protected function forbiddenResponse(string $message = 'Accès interdit'): JsonResponse
     {
-        return $this->errorResponse($message, 403, null, 'FORBIDDEN');
+        return $this->forbidden($message);
     }
 }

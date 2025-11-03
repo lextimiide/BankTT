@@ -87,39 +87,28 @@ class ClientController extends Controller
      */
     public function search(SearchClientRequest $request)
     {
-        try {
-            // Vérifier que seul un admin peut rechercher des clients
-            $user = request()->auth_user;
-            if (!$user instanceof \App\Models\Admin) {
-                return $this->errorResponse('Accès refusé. Seuls les administrateurs peuvent rechercher des clients.', 403);
-            }
+        $this->authorize('search', Client::class);
 
+        try {
             $client = $this->clientService->searchClient($request->validated());
 
-            return $this->successResponse(
+            return $this->success(
                 new ClientResource($client->load('comptes')),
                 'Client trouvé avec succès'
             );
         } catch (ValidationException $e) {
-            return $this->errorResponse('Paramètres de recherche invalides', 400, $e->errors());
+            return $this->validationError($e->errors());
         } catch (ModelNotFoundException $e) {
-            return $this->errorResponse(
-                'Aucun client trouvé avec les critères spécifiés',
-                404,
-                [
-                    'code' => 'CLIENT_NOT_FOUND',
-                    'search_params' => $request->validated()
-                ]
-            );
+            return $this->notFound('Client');
         } catch (ApiException $e) {
-            return $this->errorResponse($e->getMessage(), $e->getCode() ?: 500);
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
         } catch (\Exception $e) {
             \Log::error('Erreur lors de la recherche de client', [
                 'search_params' => $request->validated(),
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return $this->errorResponse('Erreur interne du serveur', 500);
+            return $this->serverError();
         }
     }
 }

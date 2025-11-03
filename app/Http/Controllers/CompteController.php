@@ -24,25 +24,13 @@ class CompteController extends Controller
     ) {}
 
     /**
-     * Vérifie les permissions d'accès à un compte
+     * Vérifie les permissions d'accès à un compte via Policy
      */
     private function checkAccountAccessPermission(Compte $compte, $user): void
     {
-        // Admin peut accéder à tous les comptes
-        if ($user instanceof \App\Models\Admin) {
-            return;
+        if (!$this->authorize('view', $compte)) {
+            throw new ApiException('Accès refusé. Vous ne pouvez accéder qu\'à vos propres comptes.', 403);
         }
-
-        // Client ne peut accéder qu'à ses propres comptes
-        if ($user instanceof \App\Models\Client) {
-            if ($compte->client_id !== $user->id) {
-                throw new ApiException('Accès refusé. Vous ne pouvez accéder qu\'à vos propres comptes.', 403);
-            }
-            return;
-        }
-
-        // Utilisateur inconnu
-        throw new ApiException('Type d\'utilisateur non autorisé.', 403);
     }
 
     /**
@@ -245,72 +233,38 @@ class CompteController extends Controller
      */
     public function store(StoreCompteRequest $request)
     {
+        $this->authorize('create', Compte::class);
+
         try {
             $compte = $this->compteService->createCompte($request->validated());
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Compte créé avec succès',
-                'data' => [
-                    'id' => $compte->id,
-                    'numeroCompte' => $compte->numero_compte,
-                    'titulaire' => $compte->client->titulaire,
-                    'type' => $compte->type,
-                    'solde' => $compte->solde,
-                    'devise' => $compte->devise,
-                    'dateCreation' => $compte->created_at->toISOString(),
-                    'statut' => $compte->statut,
-                    'metadata' => [
-                        'derniereModification' => $compte->updated_at->toISOString(),
-                        'version' => 1,
-                    ],
+            return $this->created([
+                'id' => $compte->id,
+                'numeroCompte' => $compte->numero_compte,
+                'titulaire' => $compte->client->titulaire,
+                'type' => $compte->type,
+                'solde' => $compte->solde,
+                'devise' => $compte->devise,
+                'dateCreation' => $compte->created_at->toISOString(),
+                'statut' => $compte->statut,
+                'metadata' => [
+                    'derniereModification' => $compte->updated_at->toISOString(),
+                    'version' => 1,
                 ],
-                'timestamp' => now()->toISOString(),
-                'path' => $request->path(),
-                'traceId' => uniqid()
-            ], 201);
+            ], 'Compte créé avec succès');
         } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Données de validation invalides',
-                'errorCode' => 'VALIDATION_ERROR',
-                'errors' => $e->errors(),
-                'timestamp' => now()->toISOString(),
-                'path' => $request->path(),
-                'traceId' => uniqid()
-            ], 422);
+            return $this->validationError($e->errors());
         } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Client non trouvé',
-                'errorCode' => 'CLIENT_NOT_FOUND',
-                'timestamp' => now()->toISOString(),
-                'path' => $request->path(),
-                'traceId' => uniqid()
-            ], 404);
+            return $this->notFound('Client');
         } catch (ApiException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-                'errorCode' => 'API_ERROR',
-                'timestamp' => now()->toISOString(),
-                'path' => $request->path(),
-                'traceId' => uniqid()
-            ], $e->getCode() ?: 400);
+            return $this->error($e->getMessage(), $e->getCode() ?: 400);
         } catch (\Exception $e) {
             \Log::error('Erreur lors de la création du compte', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'request' => $request->all()
             ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur interne du serveur',
-                'errorCode' => 'INTERNAL_ERROR',
-                'timestamp' => now()->toISOString(),
-                'path' => $request->path(),
-                'traceId' => uniqid()
-            ], 500);
+            return $this->serverError();
         }
     }
 
@@ -481,36 +435,22 @@ class CompteController extends Controller
      */
     public function show(Compte $compte)
     {
-        try {
-            // Vérifier les permissions d'accès au compte
-            $user = request()->auth_user;
-            if ($user) {
-                $this->checkAccountAccessPermission($compte, $user);
-            }
+        $this->authorize('view', $compte);
 
-            // Route Model Binding automatically loads the compte with client relationship
-            return $this->successResponse(
+        try {
+            return $this->success(
                 new CompteResource($compte->load('client')),
                 'Compte récupéré avec succès'
             );
         } catch (ModelNotFoundException $e) {
-            return $this->errorResponse(
-                'Le compte avec l\'ID spécifié n\'existe pas',
-                404,
-                [
-                    'code' => 'COMPTE_NOT_FOUND',
-                    'details' => ['compteId' => $compte->id ?? request('compteId')]
-                ]
-            );
-        } catch (ApiException $e) {
-            return $this->errorResponse($e->getMessage(), $e->getCode() ?: 403);
+            return $this->notFound('Compte');
         } catch (\Exception $e) {
             \Log::error('Erreur lors de la récupération du compte', [
-                'compte_id' => $compte->id ?? request('compteId'),
+                'compte_id' => $compte->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return $this->errorResponse('Erreur interne du serveur', 500);
+            return $this->serverError();
         }
     }
 
@@ -583,24 +523,26 @@ class CompteController extends Controller
      *     )
      * )
      */
-    public function update(UpdateCompteRequest $request, string $id)
+    public function update(UpdateCompteRequest $request, Compte $compte)
     {
+        $this->authorize('update', $compte);
+
         try {
-            $compte = $this->compteService->updateCompte($id, $request->validated());
-            return $this->successResponse(
+            $compte = $this->compteService->updateCompte($compte->id, $request->validated());
+            return $this->updated(
                 new CompteResource($compte),
                 'Compte mis à jour avec succès'
             );
         } catch (ApiException $e) {
-            return $this->errorResponse($e->getMessage(), $e->getCode() ?: 500);
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
         } catch (\Exception $e) {
             \Log::error('Erreur lors de la mise à jour du compte', [
-                'compte_id' => $id,
+                'compte_id' => $compte->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'request' => $request->all()
             ]);
-            return $this->errorResponse('Erreur interne du serveur', 500);
+            return $this->serverError();
         }
     }
 
@@ -674,30 +616,26 @@ class CompteController extends Controller
      *     )
      * )
      */
-    public function block(\App\Http\Requests\BlockCompteRequest $request, string $id)
+    public function block(\App\Http\Requests\BlockCompteRequest $request, Compte $compte)
     {
-        try {
-            // Vérifier que seul un admin peut bloquer un compte
-            $user = request()->auth_user;
-            if (!$user instanceof \App\Models\Admin) {
-                return $this->errorResponse('Accès refusé. Seuls les administrateurs peuvent bloquer des comptes.', 403);
-            }
+        $this->authorize('block', $compte);
 
-            $compte = $this->compteService->blockCompte($id, $request->validated());
-            return $this->successResponse(
+        try {
+            $compte = $this->compteService->blockCompte($compte->id, $request->validated());
+            return $this->updated(
                 new CompteResource($compte),
                 'Compte bloqué avec succès'
             );
         } catch (ApiException $e) {
-            return $this->errorResponse($e->getMessage(), $e->getCode() ?: 500);
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
         } catch (\Exception $e) {
             \Log::error('Erreur lors du blocage du compte', [
-                'compte_id' => $id,
+                'compte_id' => $compte->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'request' => $request->all()
             ]);
-            return $this->errorResponse('Erreur interne du serveur', 500);
+            return $this->serverError();
         }
     }
 
@@ -767,24 +705,26 @@ class CompteController extends Controller
      *     )
      * )
      */
-    public function unblock(\App\Http\Requests\UnblockCompteRequest $request, string $id)
+    public function unblock(\App\Http\Requests\UnblockCompteRequest $request, Compte $compte)
     {
+        $this->authorize('unblock', $compte);
+
         try {
-            $compte = $this->compteService->unblockCompte($id, $request->validated());
-            return $this->successResponse(
+            $compte = $this->compteService->unblockCompte($compte->id, $request->validated());
+            return $this->updated(
                 new CompteResource($compte),
                 'Compte débloqué avec succès'
             );
         } catch (ApiException $e) {
-            return $this->errorResponse($e->getMessage(), $e->getCode() ?: 500);
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
         } catch (\Exception $e) {
             \Log::error('Erreur lors du déblocage du compte', [
-                'compte_id' => $id,
+                'compte_id' => $compte->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'request' => $request->all()
             ]);
-            return $this->errorResponse('Erreur interne du serveur', 500);
+            return $this->serverError();
         }
     }
 
@@ -840,23 +780,22 @@ class CompteController extends Controller
      *     )
      * )
      */
-    public function destroy(string $id)
+    public function destroy(Compte $compte)
     {
+        $this->authorize('delete', $compte);
+
         try {
-            $compte = $this->compteService->deleteCompte($id);
-            return $this->successResponse(
-                new CompteResource($compte),
-                'Compte supprimé avec succès'
-            );
+            $compte = $this->compteService->deleteCompte($compte->id);
+            return $this->deleted('Compte supprimé avec succès');
         } catch (ApiException $e) {
-            return $this->errorResponse($e->getMessage(), $e->getCode() ?: 500);
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
         } catch (\Exception $e) {
             \Log::error('Erreur lors de la suppression du compte', [
-                'compte_id' => $id,
+                'compte_id' => $compte->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return $this->errorResponse('Erreur interne du serveur', 500);
+            return $this->serverError();
         }
     }
 }

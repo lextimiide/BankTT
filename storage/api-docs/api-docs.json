@@ -801,7 +801,7 @@
                                         "properties": {
                                             "titulaire": {
                                                 "type": "string",
-                                                "example": "Hawa BB Wane"
+                                                "example": "lex"
                                             },
                                             "email": {
                                                 "type": "string",
@@ -810,16 +810,16 @@
                                             },
                                             "telephone": {
                                                 "type": "string",
-                                                "example": "764138198"
+                                                "example": "768232118"
                                             },
                                             "adresse": {
                                                 "type": "string",
-                                                "example": "Dakar, Sénégal"
+                                                "example": "Test Address"
                                             },
                                             "nci": {
                                                 "description": "Numéro de carte d'identité nationale",
                                                 "type": "string",
-                                                "example": "1234567890124"
+                                                "example": "1234567190124"
                                             }
                                         },
                                         "type": "object"
