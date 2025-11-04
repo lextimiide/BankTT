@@ -2,6 +2,8 @@
 
 namespace App\Traits;
 
+use App\Enums\ApiErrorCode;
+use App\Enums\HttpStatusCode;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -51,7 +53,7 @@ trait ApiResponseTrait
     {
         return response()->json(
             $this->formatResponse(true, $message, $data),
-            200
+            HttpStatusCode::OK->value
         );
     }
 
@@ -94,7 +96,7 @@ trait ApiResponseTrait
 
         return response()->json(
             $this->formatResponse(true, $message, $data->items(), $meta),
-            200
+            HttpStatusCode::OK->value
         );
     }
 
@@ -105,7 +107,7 @@ trait ApiResponseTrait
     {
         return response()->json(
             $this->formatResponse(true, $message, $data),
-            201
+            HttpStatusCode::CREATED->value
         );
     }
 
@@ -136,27 +138,27 @@ trait ApiResponseTrait
      */
     protected function notFound(string $resource = 'Resource'): JsonResponse
     {
-        return $this->error("$resource not found", 404, 'NOT_FOUND');
+        return $this->error("$resource not found", HttpStatusCode::NOT_FOUND->value, ApiErrorCode::NOT_FOUND->value);
     }
 
     protected function unauthorized(string $message = 'Unauthorized'): JsonResponse
     {
-        return $this->error($message, 401, 'UNAUTHORIZED');
+        return $this->error($message, HttpStatusCode::UNAUTHORIZED->value, ApiErrorCode::UNAUTHORIZED->value);
     }
 
     protected function forbidden(string $message = 'Forbidden'): JsonResponse
     {
-        return $this->error($message, 403, 'FORBIDDEN');
+        return $this->error($message, HttpStatusCode::FORBIDDEN->value, ApiErrorCode::FORBIDDEN->value);
     }
 
     protected function validationError(array $errors, string $message = 'Validation failed'): JsonResponse
     {
-        return $this->error($message, 422, 'VALIDATION_ERROR', $errors);
+        return $this->error($message, HttpStatusCode::UNPROCESSABLE_ENTITY->value, ApiErrorCode::VALIDATION_ERROR->value, $errors);
     }
 
     protected function serverError(string $message = 'Internal server error'): JsonResponse
     {
-        return $this->error($message, 500, 'INTERNAL_ERROR');
+        return $this->error($message, HttpStatusCode::INTERNAL_SERVER_ERROR->value, ApiErrorCode::INTERNAL_ERROR->value);
     }
 
     // Méthodes d'aide pour les anciens noms (rétrocompatibilité)
